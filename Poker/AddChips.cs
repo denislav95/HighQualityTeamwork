@@ -1,9 +1,9 @@
-﻿using System;
-using System.Drawing;
-using System.Windows.Forms;
-
-namespace Poker
+﻿namespace Poker
 {
+    using System;
+    using System.Drawing;
+    using System.Windows.Forms;
+
     public partial class AddChips : Form
     {
         public int a;
