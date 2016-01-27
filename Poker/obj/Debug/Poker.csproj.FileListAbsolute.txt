@@ -8,3 +8,13 @@ C:\Users\Denislav\Downloads\TeamWork\HighQualityTeamwork\Poker\obj\Debug\Poker.P
 C:\Users\Denislav\Downloads\TeamWork\HighQualityTeamwork\Poker\obj\Debug\Poker.csproj.GenerateResource.Cache
 C:\Users\Denislav\Downloads\TeamWork\HighQualityTeamwork\Poker\obj\Debug\Poker.exe
 C:\Users\Denislav\Downloads\TeamWork\HighQualityTeamwork\Poker\obj\Debug\Poker.pdb
+C:\Users\DEATH\Desktop\teamwork\Poker\bin\Debug\Poker.exe.config
+C:\Users\DEATH\Desktop\teamwork\Poker\obj\Debug\Poker.exe
+C:\Users\DEATH\Desktop\teamwork\Poker\bin\Debug\Poker.exe
+C:\Users\DEATH\Desktop\teamwork\Poker\bin\Debug\Poker.pdb
+C:\Users\DEATH\Desktop\teamwork\Poker\obj\Debug\Poker.csprojResolveAssemblyReference.cache
+C:\Users\DEATH\Desktop\teamwork\Poker\obj\Debug\Poker.AddChips.resources
+C:\Users\DEATH\Desktop\teamwork\Poker\obj\Debug\Poker.Form1.resources
+C:\Users\DEATH\Desktop\teamwork\Poker\obj\Debug\Poker.Properties.Resources.resources
+C:\Users\DEATH\Desktop\teamwork\Poker\obj\Debug\Poker.csproj.GenerateResource.Cache
+C:\Users\DEATH\Desktop\teamwork\Poker\obj\Debug\Poker.pdb
