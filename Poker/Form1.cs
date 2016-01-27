@@ -15,7 +15,7 @@
     {
         #region Variables
 
-        private readonly List<bool?> bools = new List<bool?>();
+        private readonly List<bool> playersFoldStatuses = new List<bool>();
         private readonly List<Type> win = new List<Type>();
         private readonly List<string> checkWinners = new List<string>();
         private readonly List<int> ints = new List<int>();
@@ -27,17 +27,17 @@
         private readonly Panel fourthBotPanel = new Panel();
         private readonly Panel fifthBotPanel = new Panel();
 
-        private readonly int[] reserve = new int[17];
+        private readonly int[] all17CardsInPlay = new int[17];
 
         private readonly Image[] deck = new Image[52];
 
-        private readonly PictureBox[] holder = new PictureBox[52];
+        private readonly PictureBox[] deckPictureBoxArr = new PictureBox[52];
 
         private readonly Timer timer = new Timer();
 
         private readonly Timer updates = new Timer();
 
-        private int call = 500;
+        private int amountToCall = 500;
 
         private int foldedPlayers = 5;
 
@@ -165,8 +165,8 @@
 
         public Form1()
         {
-           // bools.Add(PFturn); bools.Add(B1Fturn); bools.Add(B2Fturn); bools.Add(B3Fturn); bools.Add(B4Fturn); bools.Add(B5Fturn);
-            this.call = bigBlind;
+           // playersFoldStatuses.Add(PFturn); playersFoldStatuses.Add(B1Fturn); playersFoldStatuses.Add(B2Fturn); playersFoldStatuses.Add(B3Fturn); playersFoldStatuses.Add(B4Fturn); playersFoldStatuses.Add(B5Fturn);
+            this.amountToCall = bigBlind;
             
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -178,7 +178,7 @@
             this.width = Width;
             this.height = Height;
              
-             Shuffle();
+            Shuffle();
 
             this.textboxPot.Enabled = false;
             this.textboxChips.Enabled = false;
@@ -224,12 +224,12 @@
 
         private async Task Shuffle()
         {
-           this.bools.Add(this.foldedPlayerTurn);
-           this.bools.Add(this.firstBotFoldedTurn);
-           this.bools.Add(this.secodBotFoldedTurn);
-           this.bools.Add(this.thirdBotFoldedTurn);
-           this.bools.Add(this.fourthBotFoldedTurn);
-           this.bools.Add(this.fifthBotFoldedTurn);
+           this.playersFoldStatuses.Add(this.foldedPlayerTurn);
+           this.playersFoldStatuses.Add(this.firstBotFoldedTurn);
+           this.playersFoldStatuses.Add(this.secodBotFoldedTurn);
+           this.playersFoldStatuses.Add(this.thirdBotFoldedTurn);
+           this.playersFoldStatuses.Add(this.fourthBotFoldedTurn);
+           this.playersFoldStatuses.Add(this.fifthBotFoldedTurn);
 
            this.buttonCall.Enabled = false;
            this.buttonRaise.Enabled = false;
@@ -269,17 +269,17 @@
                     imageLocation[i] = imageLocation[i].Replace(c, string.Empty);
                 }
 
-                reserve[i] = int.Parse(imageLocation[i]) - 1;
+                all17CardsInPlay[i] = int.Parse(imageLocation[i]) - 1;
 
-                holder[i] = new PictureBox
+                deckPictureBoxArr[i] = new PictureBox
                 {
                     SizeMode = PictureBoxSizeMode.StretchImage,
                     Height = 130,
                     Width = 80
                 };
 
-                Controls.Add(holder[i]);
-                holder[i].Name = "pb" + i;
+                Controls.Add(deckPictureBoxArr[i]);
+                deckPictureBoxArr[i].Name = "pb" + i;
 
                 await Task.Delay(200);
 
@@ -287,21 +287,21 @@
 
                 if (i < 2)
                 {
-                    if (holder[0].Tag != null)
+                    if (deckPictureBoxArr[0].Tag != null)
                     {
-                        holder[1].Tag = reserve[1];
+                        deckPictureBoxArr[1].Tag = all17CardsInPlay[1];
                     }
-                    holder[0].Tag = reserve[0];
-                    holder[i].Image = deck[i];
-                    holder[i].Anchor = AnchorStyles.Bottom;
-                   ////holder[i].Dock = DockStyle.Top;
-                    holder[i].Location = new Point(horizontal, vertical);
+                    deckPictureBoxArr[0].Tag = all17CardsInPlay[0];
+                    deckPictureBoxArr[i].Image = deck[i];
+                    deckPictureBoxArr[i].Anchor = AnchorStyles.Bottom;
+                   ////deckPictureBoxArr[i].Dock = DockStyle.Top;
+                    deckPictureBoxArr[i].Location = new Point(horizontal, vertical);
 
-                    horizontal += holder[i].Width;
+                    horizontal += deckPictureBoxArr[i].Width;
 
                     Controls.Add(playerPanel);
 
-                    playerPanel.Location = new Point(holder[0].Left - 10, holder[0].Top - 10);
+                    playerPanel.Location = new Point(deckPictureBoxArr[0].Left - 10, deckPictureBoxArr[0].Top - 10);
                     playerPanel.BackColor = Color.DarkBlue;
                     playerPanel.Height = 150;
                     playerPanel.Width = 180;
@@ -314,12 +314,12 @@
 
                     if (i >= 2 && i < 4)
                     {
-                        if (holder[2].Tag != null)
+                        if (deckPictureBoxArr[2].Tag != null)
                         {
-                            holder[3].Tag = reserve[3];
+                            deckPictureBoxArr[3].Tag = all17CardsInPlay[3];
                         }
 
-                        holder[2].Tag = reserve[2];
+                        deckPictureBoxArr[2].Tag = all17CardsInPlay[2];
 
                         if (!check)
                         {
@@ -329,18 +329,18 @@
 
                         check = true;
 
-                        holder[i].Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-                        holder[i].Image = backImage;
-                       ////holder[i].Image = deck[i];
-                        holder[i].Location = new Point(horizontal, vertical);
+                        deckPictureBoxArr[i].Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+                        deckPictureBoxArr[i].Image = backImage;
+                       ////deckPictureBoxArr[i].Image = deck[i];
+                        deckPictureBoxArr[i].Location = new Point(horizontal, vertical);
 
-                        horizontal += holder[i].Width;
+                        horizontal += deckPictureBoxArr[i].Width;
 
-                        holder[i].Visible = true;
+                        deckPictureBoxArr[i].Visible = true;
 
                         Controls.Add(firstBotPanel);
 
-                        firstBotPanel.Location = new Point(holder[2].Left - 10, holder[2].Top - 10);
+                        firstBotPanel.Location = new Point(deckPictureBoxArr[2].Left - 10, deckPictureBoxArr[2].Top - 10);
                         firstBotPanel.BackColor = Color.DarkBlue;
                         firstBotPanel.Height = 150;
                         firstBotPanel.Width = 180;
@@ -359,12 +359,12 @@
 
                     if (i >= 4 && i < 6)
                     {
-                        if (holder[4].Tag != null)
+                        if (deckPictureBoxArr[4].Tag != null)
                         {
-                            holder[5].Tag = reserve[5];
+                            deckPictureBoxArr[5].Tag = all17CardsInPlay[5];
                         }
 
-                        holder[4].Tag = reserve[4];
+                        deckPictureBoxArr[4].Tag = all17CardsInPlay[4];
 
                         if (!check)
                         {
@@ -374,18 +374,18 @@
 
                         check = true;
 
-                        holder[i].Anchor = AnchorStyles.Top | AnchorStyles.Left;
-                        holder[i].Image = backImage;
-                       ////holder[i].Image = deck[i];
-                        holder[i].Location = new Point(horizontal, vertical);
+                        deckPictureBoxArr[i].Anchor = AnchorStyles.Top | AnchorStyles.Left;
+                        deckPictureBoxArr[i].Image = backImage;
+                       ////deckPictureBoxArr[i].Image = deck[i];
+                        deckPictureBoxArr[i].Location = new Point(horizontal, vertical);
 
-                        horizontal += holder[i].Width;
+                        horizontal += deckPictureBoxArr[i].Width;
 
-                        holder[i].Visible = true;
+                        deckPictureBoxArr[i].Visible = true;
 
                         Controls.Add(secondBotPanel);
 
-                        secondBotPanel.Location = new Point(holder[4].Left - 10, holder[4].Top - 10);
+                        secondBotPanel.Location = new Point(deckPictureBoxArr[4].Left - 10, deckPictureBoxArr[4].Top - 10);
                         secondBotPanel.BackColor = Color.DarkBlue;
                         secondBotPanel.Height = 150;
                         secondBotPanel.Width = 180;
@@ -404,12 +404,12 @@
 
                     if (i >= 6 && i < 8)
                     {
-                        if (holder[6].Tag != null)
+                        if (deckPictureBoxArr[6].Tag != null)
                         {
-                            holder[7].Tag = reserve[7];
+                            deckPictureBoxArr[7].Tag = all17CardsInPlay[7];
                         }
 
-                        holder[6].Tag = reserve[6];
+                        deckPictureBoxArr[6].Tag = all17CardsInPlay[6];
 
                         if (!check)
                         {
@@ -419,18 +419,18 @@
 
                         check = true;
 
-                        holder[i].Anchor = AnchorStyles.Top;
-                        holder[i].Image = backImage;
-                       ////holder[i].Image = deck[i];
-                        holder[i].Location = new Point(horizontal, vertical);
+                        deckPictureBoxArr[i].Anchor = AnchorStyles.Top;
+                        deckPictureBoxArr[i].Image = backImage;
+                       ////deckPictureBoxArr[i].Image = deck[i];
+                        deckPictureBoxArr[i].Location = new Point(horizontal, vertical);
 
-                        horizontal += holder[i].Width;
+                        horizontal += deckPictureBoxArr[i].Width;
 
-                        holder[i].Visible = true;
+                        deckPictureBoxArr[i].Visible = true;
 
                         Controls.Add(thirdBotPanel);
 
-                        thirdBotPanel.Location = new Point(holder[6].Left - 10, holder[6].Top - 10);
+                        thirdBotPanel.Location = new Point(deckPictureBoxArr[6].Left - 10, deckPictureBoxArr[6].Top - 10);
                         thirdBotPanel.BackColor = Color.DarkBlue;
                         thirdBotPanel.Height = 150;
                         thirdBotPanel.Width = 180;
@@ -449,12 +449,12 @@
 
                     if (i >= 8 && i < 10)
                     {
-                        if (holder[8].Tag != null)
+                        if (deckPictureBoxArr[8].Tag != null)
                         {
-                            holder[9].Tag = reserve[9];
+                            deckPictureBoxArr[9].Tag = all17CardsInPlay[9];
                         }
 
-                        holder[8].Tag = reserve[8];
+                        deckPictureBoxArr[8].Tag = all17CardsInPlay[8];
                         if (!check)
                         {
                             horizontal = 1115;
@@ -463,18 +463,18 @@
 
                         check = true;
 
-                        holder[i].Anchor = AnchorStyles.Top | AnchorStyles.Right;
-                        holder[i].Image = backImage;
-                        ////holder[i].Image = deck[i];
-                        holder[i].Location = new Point(horizontal, vertical);
+                        deckPictureBoxArr[i].Anchor = AnchorStyles.Top | AnchorStyles.Right;
+                        deckPictureBoxArr[i].Image = backImage;
+                        ////deckPictureBoxArr[i].Image = deck[i];
+                        deckPictureBoxArr[i].Location = new Point(horizontal, vertical);
 
-                        horizontal += holder[i].Width;
+                        horizontal += deckPictureBoxArr[i].Width;
 
-                        holder[i].Visible = true;
+                        deckPictureBoxArr[i].Visible = true;
 
                         Controls.Add(fourthBotPanel);
 
-                        fourthBotPanel.Location = new Point(holder[8].Left - 10, holder[8].Top - 10);
+                        fourthBotPanel.Location = new Point(deckPictureBoxArr[8].Left - 10, deckPictureBoxArr[8].Top - 10);
                         fourthBotPanel.BackColor = Color.DarkBlue;
                         fourthBotPanel.Height = 150;
                         fourthBotPanel.Width = 180;
@@ -493,12 +493,12 @@
 
                     if (i >= 10 && i < 12)
                     {
-                        if (holder[10].Tag != null)
+                        if (deckPictureBoxArr[10].Tag != null)
                         {
-                            holder[11].Tag = reserve[11];
+                            deckPictureBoxArr[11].Tag = all17CardsInPlay[11];
                         }
 
-                        holder[10].Tag = reserve[10];
+                        deckPictureBoxArr[10].Tag = all17CardsInPlay[10];
 
                         if (!check)
                         {
@@ -508,18 +508,18 @@
 
                         check = true;
 
-                        holder[i].Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-                        holder[i].Image = backImage;
-                        ////holder[i].Image = deck[i];
-                        holder[i].Location = new Point(horizontal, vertical);
+                        deckPictureBoxArr[i].Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+                        deckPictureBoxArr[i].Image = backImage;
+                        ////deckPictureBoxArr[i].Image = deck[i];
+                        deckPictureBoxArr[i].Location = new Point(horizontal, vertical);
 
-                        horizontal += holder[i].Width;
+                        horizontal += deckPictureBoxArr[i].Width;
 
-                        holder[i].Visible = true;
+                        deckPictureBoxArr[i].Visible = true;
 
                         Controls.Add(fifthBotPanel);
 
-                        fifthBotPanel.Location = new Point(holder[10].Left - 10, holder[10].Top - 10);
+                        fifthBotPanel.Location = new Point(deckPictureBoxArr[10].Left - 10, deckPictureBoxArr[10].Top - 10);
                         fifthBotPanel.BackColor = Color.DarkBlue;
                         fifthBotPanel.Height = 150;
                         fifthBotPanel.Width = 180;
@@ -534,26 +534,26 @@
 
                 if (i >= 12)
                 {
-                    holder[12].Tag = reserve[12];
+                    deckPictureBoxArr[12].Tag = all17CardsInPlay[12];
 
                     if (i > 12)
                     {
-                        holder[13].Tag = reserve[13];
+                        deckPictureBoxArr[13].Tag = all17CardsInPlay[13];
                     }
 
                     if (i > 13)
                     {
-                        holder[14].Tag = reserve[14];
+                        deckPictureBoxArr[14].Tag = all17CardsInPlay[14];
                     }
 
                     if (i > 14)
                     {
-                        holder[15].Tag = reserve[15];
+                        deckPictureBoxArr[15].Tag = all17CardsInPlay[15];
                     }
 
                     if (i > 15)
                     {
-                        holder[16].Tag = reserve[16];
+                        deckPictureBoxArr[16].Tag = all17CardsInPlay[16];
                     }
 
                     if (!check)
@@ -564,13 +564,13 @@
 
                     check = true;
 
-                    if (holder[i] != null)
+                    if (deckPictureBoxArr[i] != null)
                     {
-                        holder[i].Anchor = AnchorStyles.None;
-                        holder[i].Image = backImage;
-                        ////holder[i].Image = deck[i];
+                        deckPictureBoxArr[i].Anchor = AnchorStyles.None;
+                        deckPictureBoxArr[i].Image = backImage;
+                        ////deckPictureBoxArr[i].Image = deck[i];
 
-                        holder[i].Location = new Point(horizontal, vertical);
+                        deckPictureBoxArr[i].Location = new Point(horizontal, vertical);
 
                         horizontal += 110;
                     }
@@ -582,8 +582,8 @@
                 {
                     firstBotFoldedTurn = true;
 
-                    holder[2].Visible = false;
-                    holder[3].Visible = false;
+                    deckPictureBoxArr[2].Visible = false;
+                    deckPictureBoxArr[3].Visible = false;
                 }
                 else
                 {
@@ -591,10 +591,10 @@
 
                     if (i == 3)
                     {
-                        if (holder[3] != null)
+                        if (deckPictureBoxArr[3] != null)
                         {
-                            holder[2].Visible = true;
-                            holder[3].Visible = true;
+                            deckPictureBoxArr[2].Visible = true;
+                            deckPictureBoxArr[3].Visible = true;
                         }
                     }
                 }
@@ -603,8 +603,8 @@
                 {
                     secodBotFoldedTurn = true;
 
-                    holder[4].Visible = false;
-                    holder[5].Visible = false;
+                    deckPictureBoxArr[4].Visible = false;
+                    deckPictureBoxArr[5].Visible = false;
                 }
                 else
                 {
@@ -612,10 +612,10 @@
 
                     if (i == 5)
                     {
-                        if (holder[5] != null)
+                        if (deckPictureBoxArr[5] != null)
                         {
-                            holder[4].Visible = true;
-                            holder[5].Visible = true;
+                            deckPictureBoxArr[4].Visible = true;
+                            deckPictureBoxArr[5].Visible = true;
                         }
                     }
                 }
@@ -624,8 +624,8 @@
                 {
                     thirdBotFoldedTurn = true;
 
-                    holder[6].Visible = false;
-                    holder[7].Visible = false;
+                    deckPictureBoxArr[6].Visible = false;
+                    deckPictureBoxArr[7].Visible = false;
                 }
                 else
                 {
@@ -633,10 +633,10 @@
 
                     if (i == 7)
                     {
-                        if (holder[7] != null)
+                        if (deckPictureBoxArr[7] != null)
                         {
-                            holder[6].Visible = true;
-                            holder[7].Visible = true;
+                            deckPictureBoxArr[6].Visible = true;
+                            deckPictureBoxArr[7].Visible = true;
                         }
                     }
                 }
@@ -645,8 +645,8 @@
                 {
                     fourthBotFoldedTurn = true;
 
-                    holder[8].Visible = false;
-                    holder[9].Visible = false;
+                    deckPictureBoxArr[8].Visible = false;
+                    deckPictureBoxArr[9].Visible = false;
                 }
                 else
                 {
@@ -654,10 +654,10 @@
 
                     if (i == 9)
                     {
-                        if (holder[9] != null)
+                        if (deckPictureBoxArr[9] != null)
                         {
-                            holder[8].Visible = true;
-                            holder[9].Visible = true;
+                            deckPictureBoxArr[8].Visible = true;
+                            deckPictureBoxArr[9].Visible = true;
                         }
                     }
                 }
@@ -666,8 +666,8 @@
                 {
                     fifthBotFoldedTurn = true;
 
-                    holder[10].Visible = false;
-                    holder[11].Visible = false;
+                    deckPictureBoxArr[10].Visible = false;
+                    deckPictureBoxArr[11].Visible = false;
                 }
                 else
                 {
@@ -675,10 +675,10 @@
 
                     if (i == 11)
                     {
-                        if (holder[11] != null)
+                        if (deckPictureBoxArr[11] != null)
                         {
-                            holder[10].Visible = true;
-                            holder[11].Visible = true;
+                            deckPictureBoxArr[10].Visible = true;
+                            deckPictureBoxArr[11].Visible = true;
                         }
                     }
                 }
@@ -783,8 +783,8 @@
                     if (buttonCall.Text.Contains("All in") == false 
                         || buttonRaise.Text.Contains("All in") == false)
                     {
-                        bools.RemoveAt(0);
-                        bools.Insert(0, null);
+                        playersFoldStatuses.RemoveAt(0);
+                        playersFoldStatuses.Insert(0, null);
 
                         maxLeft--;
 
@@ -828,8 +828,8 @@
 
                 if (firstBotFoldedTurn && !firstBotFolded)
                 {
-                    bools.RemoveAt(1);
-                    bools.Insert(1, null);
+                    playersFoldStatuses.RemoveAt(1);
+                    playersFoldStatuses.Insert(1, null);
 
                     maxLeft--;
 
@@ -863,8 +863,8 @@
 
                 if (secodBotFoldedTurn && !secondBotFolded)
                 {
-                    bools.RemoveAt(2);
-                    bools.Insert(2, null);
+                    playersFoldStatuses.RemoveAt(2);
+                    playersFoldStatuses.Insert(2, null);
                     maxLeft--;
                     secondBotFolded = true;
                 }
@@ -896,8 +896,8 @@
 
                 if (thirdBotFoldedTurn && !thirdBotFolded)
                 {
-                    bools.RemoveAt(3);
-                    bools.Insert(3, null);
+                    playersFoldStatuses.RemoveAt(3);
+                    playersFoldStatuses.Insert(3, null);
                     maxLeft--;
                     thirdBotFolded = true;
                 }
@@ -928,8 +928,8 @@
 
                 if (fourthBotFoldedTurn && !fourthBotFolded)
                 {
-                    bools.RemoveAt(4);
-                    bools.Insert(4, null);
+                    playersFoldStatuses.RemoveAt(4);
+                    playersFoldStatuses.Insert(4, null);
 
                     maxLeft--;
 
@@ -962,8 +962,8 @@
 
                 if (fifthBotFoldedTurn && !fifthBotFolded)
                 {
-                    bools.RemoveAt(5);
-                    bools.Insert(5, null);
+                    playersFoldStatuses.RemoveAt(5);
+                    playersFoldStatuses.Insert(5, null);
 
                     maxLeft--;
 
@@ -982,8 +982,8 @@
                     if (buttonCall.Text.Contains("All in") == false 
                         || buttonRaise.Text.Contains("All in") == false)
                     {
-                        bools.RemoveAt(0);
-                        bools.Insert(0, null);
+                        playersFoldStatuses.RemoveAt(0);
+                        playersFoldStatuses.Insert(0, null);
 
                         maxLeft--;
 
@@ -1017,14 +1017,14 @@
                 var cardsOnTable = new int[5];
                 var playerCards = new int[7];
 
-                playerCards[0] = reserve[c1];
-                playerCards[1] = reserve[c2];
+                playerCards[0] = all17CardsInPlay[c1];
+                playerCards[1] = all17CardsInPlay[c2];
 
-                cardsOnTable[0] = playerCards[2] = reserve[12];
-                cardsOnTable[1] = playerCards[3] = reserve[13];
-                cardsOnTable[2] = playerCards[4] = reserve[14];
-                cardsOnTable[3] = playerCards[5] = reserve[15];
-                cardsOnTable[4] = playerCards[6] = reserve[16];
+                cardsOnTable[0] = playerCards[2] = all17CardsInPlay[12];
+                cardsOnTable[1] = playerCards[3] = all17CardsInPlay[13];
+                cardsOnTable[2] = playerCards[4] = all17CardsInPlay[14];
+                cardsOnTable[3] = playerCards[5] = all17CardsInPlay[15];
+                cardsOnTable[4] = playerCards[6] = all17CardsInPlay[16];
 
                 var clubs = playerCards.Where(o => o % 4 == 0).ToArray();
                 var diamonds = playerCards.Where(o => o % 4 == 1).ToArray();
@@ -1046,8 +1046,8 @@
 
                 for (i = 0; i < 16; i++)
                 {
-                    if (reserve[i] == int.Parse(holder[c1].Tag.ToString()) 
-                        && reserve[i + 1] == int.Parse(holder[c2].Tag.ToString()))
+                    if (all17CardsInPlay[i] == int.Parse(deckPictureBoxArr[c1].Tag.ToString()) 
+                        && all17CardsInPlay[i + 1] == int.Parse(deckPictureBoxArr[c2].Tag.ToString()))
                     {
                         //Pair from Hand current = 1
 
@@ -1468,14 +1468,14 @@
 
                 if (flushOfClubs.Length == 3 || flushOfClubs.Length == 4)
                 {
-                    if (reserve[i] % 4 == reserve[i + 1] % 4 
-                        && reserve[i] % 4 == flushOfClubs[0] % 4)
+                    if (all17CardsInPlay[i] % 4 == all17CardsInPlay[i + 1] % 4 
+                        && all17CardsInPlay[i] % 4 == flushOfClubs[0] % 4)
                     {
-                        if (reserve[i] / 4 > flushOfClubs.Max() / 4)
+                        if (all17CardsInPlay[i] / 4 > flushOfClubs.Max() / 4)
                         {
                             current = 5;
 
-                            power = reserve[i] + current*100;
+                            power = all17CardsInPlay[i] + current*100;
 
                             win.Add(new Type()
                             {
@@ -1491,11 +1491,11 @@
                             vf = true;
                         }
 
-                        if (reserve[i + 1] / 4 > flushOfClubs.Max() / 4)
+                        if (all17CardsInPlay[i + 1] / 4 > flushOfClubs.Max() / 4)
                         {
                             current = 5;
 
-                            power = reserve[i + 1] + current*100;
+                            power = all17CardsInPlay[i + 1] + current*100;
 
                             win.Add(new Type()
                             {
@@ -1510,8 +1510,8 @@
 
                             vf = true;
                         }
-                        else if (reserve[i] / 4 < flushOfClubs.Max() / 4 
-                            && reserve[i + 1] / 4 < flushOfClubs.Max() / 4)
+                        else if (all17CardsInPlay[i] / 4 < flushOfClubs.Max() / 4 
+                            && all17CardsInPlay[i + 1] / 4 < flushOfClubs.Max() / 4)
                         {
                             current = 5;
 
@@ -1535,14 +1535,14 @@
                 //different cards in hand
                 if (flushOfClubs.Length == 4) 
                 {
-                    if (reserve[i] % 4 != reserve[i + 1] % 4 
-                        && reserve[i] % 4 == flushOfClubs[0] % 4)
+                    if (all17CardsInPlay[i] % 4 != all17CardsInPlay[i + 1] % 4 
+                        && all17CardsInPlay[i] % 4 == flushOfClubs[0] % 4)
                     {
-                        if (reserve[i] / 4 > flushOfClubs.Max() / 4)
+                        if (all17CardsInPlay[i] / 4 > flushOfClubs.Max() / 4)
                         {
                             current = 5;
 
-                            power = reserve[i] + current*100;
+                            power = all17CardsInPlay[i] + current*100;
 
                             win.Add(new Type()
                             {
@@ -1578,14 +1578,14 @@
                         }
                     }
 
-                    if (reserve[i + 1] % 4 != reserve[i] % 4 
-                        && reserve[i + 1] % 4 == flushOfClubs[0] % 4)
+                    if (all17CardsInPlay[i + 1] % 4 != all17CardsInPlay[i] % 4 
+                        && all17CardsInPlay[i + 1] % 4 == flushOfClubs[0] % 4)
                     {
-                        if (reserve[i + 1] / 4 > flushOfClubs.Max() / 4)
+                        if (all17CardsInPlay[i + 1] / 4 > flushOfClubs.Max() / 4)
                         {
                             current = 5;
 
-                            power = reserve[i + 1] + current * 100;
+                            power = all17CardsInPlay[i + 1] + current * 100;
 
                             win.Add(new Type()
                             {
@@ -1624,12 +1624,12 @@
 
                 if (flushOfClubs.Length == 5)
                 {
-                    if (reserve[i] % 4 == flushOfClubs[0] % 4 
-                        && reserve[i] / 4 > flushOfClubs.Min() / 4)
+                    if (all17CardsInPlay[i] % 4 == flushOfClubs[0] % 4 
+                        && all17CardsInPlay[i] / 4 > flushOfClubs.Min() / 4)
                     {
                         current = 5;
 
-                        power = reserve[i] + current * 100;
+                        power = all17CardsInPlay[i] + current * 100;
 
                         win.Add(new Type()
                         {
@@ -1645,12 +1645,12 @@
                         vf = true;
                     }
 
-                    if (reserve[i + 1] % 4 == flushOfClubs[0] % 4 
-                        && reserve[i + 1] / 4 > flushOfClubs.Min() / 4)
+                    if (all17CardsInPlay[i + 1] % 4 == flushOfClubs[0] % 4 
+                        && all17CardsInPlay[i + 1] / 4 > flushOfClubs.Min() / 4)
                     {
                         current = 5;
 
-                        power = reserve[i + 1] + current * 100;
+                        power = all17CardsInPlay[i + 1] + current * 100;
 
                         win.Add(new Type()
                         {
@@ -1665,8 +1665,8 @@
 
                         vf = true;
                     }
-                    else if (reserve[i] / 4 < flushOfClubs.Min() / 4 
-                        && reserve[i + 1] / 4 < flushOfClubs.Min())
+                    else if (all17CardsInPlay[i] / 4 < flushOfClubs.Min() / 4 
+                        && all17CardsInPlay[i + 1] / 4 < flushOfClubs.Min())
                     {
                         current = 5;
 
@@ -1689,14 +1689,14 @@
 
                 if (flushOfDiamonds.Length == 3 || flushOfDiamonds.Length == 4)
                 {
-                    if (reserve[i] % 4 == reserve[i + 1] % 4 
-                        && reserve[i] % 4 == flushOfDiamonds[0] % 4)
+                    if (all17CardsInPlay[i] % 4 == all17CardsInPlay[i + 1] % 4 
+                        && all17CardsInPlay[i] % 4 == flushOfDiamonds[0] % 4)
                     {
-                        if (reserve[i] / 4 > flushOfDiamonds.Max() / 4)
+                        if (all17CardsInPlay[i] / 4 > flushOfDiamonds.Max() / 4)
                         {
                             current = 5;
 
-                            power = reserve[i] + current*100;
+                            power = all17CardsInPlay[i] + current*100;
 
                             win.Add(new Type()
                             {
@@ -1712,11 +1712,11 @@
                             vf = true;
                         }
 
-                        if (reserve[i + 1] / 4 > flushOfDiamonds.Max() / 4)
+                        if (all17CardsInPlay[i + 1] / 4 > flushOfDiamonds.Max() / 4)
                         {
                             current = 5;
 
-                            power = reserve[i + 1] + current * 100;
+                            power = all17CardsInPlay[i + 1] + current * 100;
 
                             win.Add(new Type()
                             {
@@ -1731,8 +1731,8 @@
 
                             vf = true;
                         }
-                        else if (reserve[i] / 4 < flushOfDiamonds.Max() / 4 
-                            && reserve[i + 1] / 4 < flushOfDiamonds.Max() / 4)
+                        else if (all17CardsInPlay[i] / 4 < flushOfDiamonds.Max() / 4 
+                            && all17CardsInPlay[i + 1] / 4 < flushOfDiamonds.Max() / 4)
                         {
                             current = 5;
 
@@ -1756,14 +1756,14 @@
                 //different cards in hand
                 if (flushOfDiamonds.Length == 4) 
                 {
-                    if (reserve[i] % 4 != reserve[i + 1] % 4 
-                        && reserve[i] % 4 == flushOfDiamonds[0] % 4)
+                    if (all17CardsInPlay[i] % 4 != all17CardsInPlay[i + 1] % 4 
+                        && all17CardsInPlay[i] % 4 == flushOfDiamonds[0] % 4)
                     {
-                        if (reserve[i] / 4 > flushOfDiamonds.Max() / 4)
+                        if (all17CardsInPlay[i] / 4 > flushOfDiamonds.Max() / 4)
                         {
                             current = 5;
 
-                            power = reserve[i] + current * 100;
+                            power = all17CardsInPlay[i] + current * 100;
 
                             win.Add(new Type()
                             {
@@ -1799,14 +1799,14 @@
                         }
                     }
 
-                    if (reserve[i + 1] % 4 != reserve[i] % 4 
-                        && reserve[i + 1] % 4 == flushOfDiamonds[0] % 4)
+                    if (all17CardsInPlay[i + 1] % 4 != all17CardsInPlay[i] % 4 
+                        && all17CardsInPlay[i + 1] % 4 == flushOfDiamonds[0] % 4)
                     {
-                        if (reserve[i + 1] / 4 > flushOfDiamonds.Max() / 4)
+                        if (all17CardsInPlay[i + 1] / 4 > flushOfDiamonds.Max() / 4)
                         {
                             current = 5;
 
-                            power = reserve[i + 1] + current * 100;
+                            power = all17CardsInPlay[i + 1] + current * 100;
 
                             win.Add(new Type()
                             {
@@ -1845,12 +1845,12 @@
 
                 if (flushOfDiamonds.Length == 5)
                 {
-                    if (reserve[i] % 4 == flushOfDiamonds[0] % 4 
-                        && reserve[i] / 4 > flushOfDiamonds.Min() / 4)
+                    if (all17CardsInPlay[i] % 4 == flushOfDiamonds[0] % 4 
+                        && all17CardsInPlay[i] / 4 > flushOfDiamonds.Min() / 4)
                     {
                         current = 5;
 
-                        power = reserve[i] + current * 100;
+                        power = all17CardsInPlay[i] + current * 100;
 
                         win.Add(new Type()
                         {
@@ -1866,12 +1866,12 @@
                         vf = true;
                     }
 
-                    if (reserve[i + 1] % 4 == flushOfDiamonds[0] % 4 
-                        && reserve[i + 1] / 4 > flushOfDiamonds.Min() / 4)
+                    if (all17CardsInPlay[i + 1] % 4 == flushOfDiamonds[0] % 4 
+                        && all17CardsInPlay[i + 1] / 4 > flushOfDiamonds.Min() / 4)
                     {
                         current = 5;
 
-                        power = reserve[i + 1] + current * 100;
+                        power = all17CardsInPlay[i + 1] + current * 100;
 
                         win.Add(new Type()
                         {
@@ -1886,8 +1886,8 @@
 
                         vf = true;
                     }
-                    else if (reserve[i] / 4 < flushOfDiamonds.Min() / 4 
-                        && reserve[i + 1] / 4 < flushOfDiamonds.Min())
+                    else if (all17CardsInPlay[i] / 4 < flushOfDiamonds.Min() / 4 
+                        && all17CardsInPlay[i + 1] / 4 < flushOfDiamonds.Min())
                     {
                         current = 5;
 
@@ -1910,14 +1910,14 @@
 
                 if (flushOfHearts.Length == 3 || flushOfHearts.Length == 4)
                 {
-                    if (reserve[i] % 4 == reserve[i + 1] % 4 
-                        && reserve[i] % 4 == flushOfHearts[0] % 4)
+                    if (all17CardsInPlay[i] % 4 == all17CardsInPlay[i + 1] % 4 
+                        && all17CardsInPlay[i] % 4 == flushOfHearts[0] % 4)
                     {
-                        if (reserve[i] / 4 > flushOfHearts.Max() / 4)
+                        if (all17CardsInPlay[i] / 4 > flushOfHearts.Max() / 4)
                         {
                             current = 5;
 
-                            power = reserve[i] + current * 100;
+                            power = all17CardsInPlay[i] + current * 100;
 
                             win.Add(new Type()
                             {
@@ -1933,11 +1933,11 @@
                             vf = true;
                         }
 
-                        if (reserve[i + 1] / 4 > flushOfHearts.Max() / 4)
+                        if (all17CardsInPlay[i + 1] / 4 > flushOfHearts.Max() / 4)
                         {
                             current = 5;
 
-                            power = reserve[i + 1] + current * 100;
+                            power = all17CardsInPlay[i + 1] + current * 100;
 
                             win.Add(new Type()
                             {
@@ -1952,8 +1952,8 @@
 
                             vf = true;
                         }
-                        else if (reserve[i] / 4 < flushOfHearts.Max() / 4 
-                            && reserve[i + 1] / 4 < flushOfHearts.Max() / 4)
+                        else if (all17CardsInPlay[i] / 4 < flushOfHearts.Max() / 4 
+                            && all17CardsInPlay[i + 1] / 4 < flushOfHearts.Max() / 4)
                         {
                             current = 5;
 
@@ -1977,14 +1977,14 @@
                 //different cards in hand
                 if (flushOfHearts.Length == 4) 
                 {
-                    if (reserve[i] % 4 != reserve[i + 1] % 4 
-                        && reserve[i] % 4 == flushOfHearts[0] % 4)
+                    if (all17CardsInPlay[i] % 4 != all17CardsInPlay[i + 1] % 4 
+                        && all17CardsInPlay[i] % 4 == flushOfHearts[0] % 4)
                     {
-                        if (reserve[i] / 4 > flushOfHearts.Max() / 4)
+                        if (all17CardsInPlay[i] / 4 > flushOfHearts.Max() / 4)
                         {
                             current = 5;
 
-                            power = reserve[i] + current * 100;
+                            power = all17CardsInPlay[i] + current * 100;
 
                             win.Add(new Type()
                             {
@@ -2021,14 +2021,14 @@
                         }
                     }
 
-                    if (reserve[i + 1] % 4 != reserve[i] % 4 
-                        && reserve[i + 1] % 4 == flushOfHearts[0] % 4)
+                    if (all17CardsInPlay[i + 1] % 4 != all17CardsInPlay[i] % 4 
+                        && all17CardsInPlay[i + 1] % 4 == flushOfHearts[0] % 4)
                     {
-                        if (reserve[i + 1] / 4 > flushOfHearts.Max() / 4)
+                        if (all17CardsInPlay[i + 1] / 4 > flushOfHearts.Max() / 4)
                         {
                             current = 5;
 
-                            power = reserve[i + 1] + current * 100;
+                            power = all17CardsInPlay[i + 1] + current * 100;
 
                             win.Add(new Type()
                             {
@@ -2067,12 +2067,12 @@
 
                 if (flushOfHearts.Length == 5)
                 {
-                    if (reserve[i] % 4 == flushOfHearts[0] % 4 
-                        && reserve[i] / 4 > flushOfHearts.Min() / 4)
+                    if (all17CardsInPlay[i] % 4 == flushOfHearts[0] % 4 
+                        && all17CardsInPlay[i] / 4 > flushOfHearts.Min() / 4)
                     {
                         current = 5;
 
-                        power = reserve[i] + current * 100;
+                        power = all17CardsInPlay[i] + current * 100;
 
                         win.Add(new Type()
                         {
@@ -2088,12 +2088,12 @@
                         vf = true;
                     }
 
-                    if (reserve[i + 1] % 4 == flushOfHearts[0] % 4 
-                        && reserve[i + 1] / 4 > flushOfHearts.Min() / 4)
+                    if (all17CardsInPlay[i + 1] % 4 == flushOfHearts[0] % 4 
+                        && all17CardsInPlay[i + 1] / 4 > flushOfHearts.Min() / 4)
                     {
                         current = 5;
 
-                        power = reserve[i + 1] + current * 100;
+                        power = all17CardsInPlay[i + 1] + current * 100;
 
                         win.Add(new Type()
                         {
@@ -2108,8 +2108,8 @@
 
                         vf = true;
                     }
-                    else if (reserve[i] / 4 < flushOfHearts.Min() / 4 
-                        && reserve[i + 1] / 4 < flushOfHearts.Min())
+                    else if (all17CardsInPlay[i] / 4 < flushOfHearts.Min() / 4 
+                        && all17CardsInPlay[i + 1] / 4 < flushOfHearts.Min())
                     {
                         current = 5;
 
@@ -2132,14 +2132,14 @@
 
                 if (flushOfSpades.Length == 3 || flushOfSpades.Length == 4)
                 {
-                    if (reserve[i] % 4 == reserve[i + 1] % 4 
-                        && reserve[i] % 4 == flushOfSpades[0] % 4)
+                    if (all17CardsInPlay[i] % 4 == all17CardsInPlay[i + 1] % 4 
+                        && all17CardsInPlay[i] % 4 == flushOfSpades[0] % 4)
                     {
-                        if (reserve[i] / 4 > flushOfSpades.Max() / 4)
+                        if (all17CardsInPlay[i] / 4 > flushOfSpades.Max() / 4)
                         {
                             current = 5;
 
-                            power = reserve[i] + current * 100;
+                            power = all17CardsInPlay[i] + current * 100;
 
                             win.Add(new Type()
                             {
@@ -2155,11 +2155,11 @@
                             vf = true;
                         }
 
-                        if (reserve[i + 1] / 4 > flushOfSpades.Max() / 4)
+                        if (all17CardsInPlay[i + 1] / 4 > flushOfSpades.Max() / 4)
                         {
                             current = 5;
 
-                            power = reserve[i + 1] + current * 100;
+                            power = all17CardsInPlay[i + 1] + current * 100;
 
                             win.Add(new Type()
                             {
@@ -2174,8 +2174,8 @@
 
                             vf = true;
                         }
-                        else if (reserve[i] / 4 < flushOfSpades.Max() / 4 
-                            && reserve[i + 1] / 4 < flushOfSpades.Max() / 4)
+                        else if (all17CardsInPlay[i] / 4 < flushOfSpades.Max() / 4 
+                            && all17CardsInPlay[i + 1] / 4 < flushOfSpades.Max() / 4)
                         {
                             current = 5;
 
@@ -2199,14 +2199,14 @@
                 //different cards in hand
                 if (flushOfSpades.Length == 4) 
                 {
-                    if (reserve[i] % 4 != reserve[i + 1] % 4 
-                        && reserve[i] % 4 == flushOfSpades[0] % 4)
+                    if (all17CardsInPlay[i] % 4 != all17CardsInPlay[i + 1] % 4 
+                        && all17CardsInPlay[i] % 4 == flushOfSpades[0] % 4)
                     {
-                        if (reserve[i] / 4 > flushOfSpades.Max() / 4)
+                        if (all17CardsInPlay[i] / 4 > flushOfSpades.Max() / 4)
                         {
                             current = 5;
 
-                            power = reserve[i] + current * 100;
+                            power = all17CardsInPlay[i] + current * 100;
 
                             win.Add(new Type()
                             {
@@ -2242,14 +2242,14 @@
                         }
                     }
 
-                    if (reserve[i + 1] % 4 != reserve[i] % 4 
-                        && reserve[i + 1] % 4 == flushOfSpades[0] % 4)
+                    if (all17CardsInPlay[i + 1] % 4 != all17CardsInPlay[i] % 4 
+                        && all17CardsInPlay[i + 1] % 4 == flushOfSpades[0] % 4)
                     {
-                        if (reserve[i + 1] / 4 > flushOfSpades.Max() / 4)
+                        if (all17CardsInPlay[i + 1] / 4 > flushOfSpades.Max() / 4)
                         {
                             current = 5;
 
-                            power = reserve[i + 1] + current * 100;
+                            power = all17CardsInPlay[i + 1] + current * 100;
 
                             win.Add(new Type()
                             {
@@ -2290,12 +2290,12 @@
 
                 if (flushOfSpades.Length == 5)
                 {
-                    if (reserve[i] % 4 == flushOfSpades[0] % 4 
-                        && reserve[i] / 4 > flushOfSpades.Min() / 4)
+                    if (all17CardsInPlay[i] % 4 == flushOfSpades[0] % 4 
+                        && all17CardsInPlay[i] / 4 > flushOfSpades.Min() / 4)
                     {
                         current = 5;
 
-                        power = reserve[i] + current * 100;
+                        power = all17CardsInPlay[i] + current * 100;
 
                         win.Add(new Type()
                         {
@@ -2312,12 +2312,12 @@
                         vf = true;
                     }
 
-                    if (reserve[i + 1] % 4 == flushOfSpades[0] % 4 
-                        && reserve[i + 1] / 4 > flushOfSpades.Min() / 4)
+                    if (all17CardsInPlay[i + 1] % 4 == flushOfSpades[0] % 4 
+                        && all17CardsInPlay[i + 1] / 4 > flushOfSpades.Min() / 4)
                     {
                         current = 5;
 
-                        power = reserve[i + 1] + current * 100;
+                        power = all17CardsInPlay[i + 1] + current * 100;
 
                         win.Add(new Type()
                         {
@@ -2333,8 +2333,8 @@
 
                         vf = true;
                     }
-                    else if (reserve[i] / 4 < flushOfSpades.Min() / 4 
-                        && reserve[i + 1] / 4 < flushOfSpades.Min())
+                    else if (all17CardsInPlay[i] / 4 < flushOfSpades.Min() / 4 
+                        && all17CardsInPlay[i + 1] / 4 < flushOfSpades.Min())
                     {
                         current = 5;
 
@@ -2357,8 +2357,8 @@
                 }
                 if (flushOfClubs.Length > 0)
                 {
-                    if (reserve[i] / 4 == 0 
-                        && reserve[i] % 4 == flushOfClubs[0] % 4 
+                    if (all17CardsInPlay[i] / 4 == 0 
+                        && all17CardsInPlay[i] % 4 == flushOfClubs[0] % 4 
                         && vf 
                         && flushOfClubs.Length > 0)
                     {
@@ -2379,8 +2379,8 @@
                             .First();
                     }
 
-                    if (reserve[i + 1] / 4 == 0 
-                        && reserve[i + 1] % 4 == flushOfClubs[0] % 4 
+                    if (all17CardsInPlay[i + 1] / 4 == 0 
+                        && all17CardsInPlay[i + 1] % 4 == flushOfClubs[0] % 4 
                         && vf 
                         && flushOfClubs.Length > 0)
                     {
@@ -2404,8 +2404,8 @@
 
                 if (flushOfDiamonds.Length > 0)
                 {
-                    if (reserve[i] / 4 == 0 
-                        && reserve[i] % 4 == flushOfDiamonds[0] % 4 
+                    if (all17CardsInPlay[i] / 4 == 0 
+                        && all17CardsInPlay[i] % 4 == flushOfDiamonds[0] % 4 
                         && vf 
                         && flushOfDiamonds.Length > 0)
                     {
@@ -2426,8 +2426,8 @@
                             .First();
                     }
 
-                    if (reserve[i + 1] / 4 == 0 
-                        && reserve[i + 1] % 4 == flushOfDiamonds[0] % 4 
+                    if (all17CardsInPlay[i + 1] / 4 == 0 
+                        && all17CardsInPlay[i + 1] % 4 == flushOfDiamonds[0] % 4 
                         && vf 
                         && flushOfDiamonds.Length > 0)
                     {
@@ -2451,8 +2451,8 @@
 
                 if (flushOfHearts.Length > 0)
                 {
-                    if (reserve[i] / 4 == 0 
-                        && reserve[i] % 4 == flushOfHearts[0] % 4 
+                    if (all17CardsInPlay[i] / 4 == 0 
+                        && all17CardsInPlay[i] % 4 == flushOfHearts[0] % 4 
                         && vf 
                         && flushOfHearts.Length > 0)
                     {
@@ -2473,8 +2473,8 @@
                             .First();
                     }
 
-                    if (reserve[i + 1] / 4 == 0 
-                        && reserve[i + 1] % 4 == flushOfHearts[0] % 4 
+                    if (all17CardsInPlay[i + 1] / 4 == 0 
+                        && all17CardsInPlay[i + 1] % 4 == flushOfHearts[0] % 4 
                         && vf 
                         && flushOfHearts.Length > 0)
                     {
@@ -2498,8 +2498,8 @@
 
                 if (flushOfSpades.Length > 0)
                 {
-                    if (reserve[i] / 4 == 0 
-                        && reserve[i] % 4 == flushOfSpades[0] % 4 
+                    if (all17CardsInPlay[i] / 4 == 0 
+                        && all17CardsInPlay[i] % 4 == flushOfSpades[0] % 4 
                         && vf 
                         && flushOfSpades.Length > 0)
                     {
@@ -2520,8 +2520,8 @@
                             .First();
                     }
 
-                    if (reserve[i + 1] / 4 == 0 
-                        && reserve[i + 1] % 4 == flushOfSpades[0] % 4 
+                    if (all17CardsInPlay[i + 1] / 4 == 0 
+                        && all17CardsInPlay[i + 1] % 4 == flushOfSpades[0] % 4 
                         && vf)
                     {
                         current = 5.5;
@@ -2686,7 +2686,7 @@
                 {
                     int max = indexOfCardsInTable - minIndex;
 
-                    if (reserve[i] / 4 != reserve[i + 1] / 4)
+                    if (all17CardsInPlay[i] / 4 != all17CardsInPlay[i + 1] / 4)
                     {
                         for (int k = 1; k <= max; k++)
                         {
@@ -2697,18 +2697,18 @@
 
                             if (indexOfCardsInTable - k >= 12)
                             {
-                                if (reserve[i] / 4 == reserve[indexOfCardsInTable] / 4 
-                                    && reserve[i + 1] / 4 == reserve[indexOfCardsInTable - k] / 4 
-                                    || reserve[i + 1] / 4 == reserve[indexOfCardsInTable] / 4 
-                                    && reserve[i] / 4 == reserve[indexOfCardsInTable - k] / 4)
+                                if (all17CardsInPlay[i] / 4 == all17CardsInPlay[indexOfCardsInTable] / 4 
+                                    && all17CardsInPlay[i + 1] / 4 == all17CardsInPlay[indexOfCardsInTable - k] / 4 
+                                    || all17CardsInPlay[i + 1] / 4 == all17CardsInPlay[indexOfCardsInTable] / 4 
+                                    && all17CardsInPlay[i] / 4 == all17CardsInPlay[indexOfCardsInTable - k] / 4)
                                 {
                                     if (!messageBox)
                                     {
-                                        if (reserve[i] / 4 == 0)
+                                        if (all17CardsInPlay[i] / 4 == 0)
                                         {
                                             current = 2;
 
-                                            power = 13 * 4 + (reserve[i + 1] / 4) * 2 + current * 100;
+                                            power = 13 * 4 + (all17CardsInPlay[i + 1] / 4) * 2 + current * 100;
 
                                             win.Add(new Type()
                                             {
@@ -2723,11 +2723,11 @@
                                                 .First();
                                         }
 
-                                        if (reserve[i + 1] / 4 == 0)
+                                        if (all17CardsInPlay[i + 1] / 4 == 0)
                                         {
                                             current = 2;
 
-                                            power = 13 * 4 + (reserve[i] / 4) * 2 + current * 100;
+                                            power = 13 * 4 + (all17CardsInPlay[i] / 4) * 2 + current * 100;
 
                                             win.Add(new Type()
                                             {
@@ -2742,11 +2742,11 @@
                                                 .First();
                                         }
 
-                                        if (reserve[i + 1] / 4 != 0 && reserve[i] / 4 != 0)
+                                        if (all17CardsInPlay[i + 1] / 4 != 0 && all17CardsInPlay[i] / 4 != 0)
                                         {
                                             current = 2;
 
-                                            power = (reserve[i]/4) * 2 + (reserve[i + 1] / 4) * 2 + current * 100;
+                                            power = (all17CardsInPlay[i]/4) * 2 + (all17CardsInPlay[i + 1] / 4) * 2 + current * 100;
 
                                             win.Add(new Type()
                                             {
@@ -2794,19 +2794,19 @@
                         }
                         if (indexOfCardsInTable - k >= 12)
                         {
-                            if (reserve[indexOfCardsInTable] / 4 == reserve[indexOfCardsInTable - k] / 4)
+                            if (all17CardsInPlay[indexOfCardsInTable] / 4 == all17CardsInPlay[indexOfCardsInTable - k] / 4)
                             {
-                                if (reserve[indexOfCardsInTable] / 4 != reserve[i] / 4 
-                                    && reserve[indexOfCardsInTable] / 4 != reserve[i + 1] / 4 
+                                if (all17CardsInPlay[indexOfCardsInTable] / 4 != all17CardsInPlay[i] / 4 
+                                    && all17CardsInPlay[indexOfCardsInTable] / 4 != all17CardsInPlay[i + 1] / 4 
                                     && current == 1)
                                 {
                                     if (!messageBox)
                                     {
-                                        if (reserve[i + 1] / 4 == 0)
+                                        if (all17CardsInPlay[i + 1] / 4 == 0)
                                         {
                                             current = 2;
 
-                                            power = (reserve[i] / 4) * 2 + 13 * 4 + current * 100;
+                                            power = (all17CardsInPlay[i] / 4) * 2 + 13 * 4 + current * 100;
 
                                             win.Add(new Type()
                                             {
@@ -2821,11 +2821,11 @@
                                                 .First();
                                         }
 
-                                        if (reserve[i] / 4 == 0)
+                                        if (all17CardsInPlay[i] / 4 == 0)
                                         {
                                             current = 2;
 
-                                            power = (reserve[i + 1] / 4) * 2 + 13 * 4 + current * 100;
+                                            power = (all17CardsInPlay[i + 1] / 4) * 2 + 13 * 4 + current * 100;
 
                                             win.Add(new Type()
                                             {
@@ -2840,12 +2840,12 @@
                                                 .First();
                                         }
 
-                                        if (reserve[i + 1] / 4 != 0)
+                                        if (all17CardsInPlay[i + 1] / 4 != 0)
                                         {
                                             current = 2;
 
                                             power = 
-                                                (reserve[indexOfCardsInTable] / 4) * 2 + (reserve[i + 1] / 4) * 2 + current * 100;
+                                                (all17CardsInPlay[indexOfCardsInTable] / 4) * 2 + (all17CardsInPlay[i + 1] / 4) * 2 + current * 100;
 
                                             win.Add(new Type()
                                             {
@@ -2859,12 +2859,12 @@
                                                 .ThenByDescending(op => op.Power)
                                                 .First();
                                         }
-                                        if (reserve[i] / 4 != 0)
+                                        if (all17CardsInPlay[i] / 4 != 0)
                                         {
                                             current = 2;
 
                                             power = 
-                                                (reserve[indexOfCardsInTable] / 4) * 2 + (reserve[i] / 4) * 2 + current * 100;
+                                                (all17CardsInPlay[indexOfCardsInTable] / 4) * 2 + (all17CardsInPlay[i] / 4) * 2 + current * 100;
 
                                             win.Add(new Type()
                                             {
@@ -2887,13 +2887,13 @@
                                 {
                                     if (!otherMessageBox)
                                     {
-                                        if (reserve[i] / 4 > reserve[i + 1] / 4)
+                                        if (all17CardsInPlay[i] / 4 > all17CardsInPlay[i + 1] / 4)
                                         {
-                                            if (reserve[indexOfCardsInTable] / 4 == 0)
+                                            if (all17CardsInPlay[indexOfCardsInTable] / 4 == 0)
                                             {
                                                 current = 0;
 
-                                                power = 13 + reserve[i] / 4 + current * 100;
+                                                power = 13 + all17CardsInPlay[i] / 4 + current * 100;
 
                                                 win.Add(new Type()
                                                 {
@@ -2911,7 +2911,7 @@
                                             {
                                                 current = 0;
 
-                                                power = reserve[indexOfCardsInTable] / 4 + reserve[i] / 4 + current * 100;
+                                                power = all17CardsInPlay[indexOfCardsInTable] / 4 + all17CardsInPlay[i] / 4 + current * 100;
 
                                                 win.Add(new Type()
                                                 {
@@ -2928,11 +2928,11 @@
                                         }
                                         else
                                         {
-                                            if (reserve[indexOfCardsInTable] / 4 == 0)
+                                            if (all17CardsInPlay[indexOfCardsInTable] / 4 == 0)
                                             {
                                                 current = 0;
 
-                                                power = 13 + reserve[i + 1] + current * 100;
+                                                power = 13 + all17CardsInPlay[i + 1] + current * 100;
 
                                                 win.Add(new Type()
                                                 {
@@ -2950,7 +2950,7 @@
                                             {
                                                 current = 0;
 
-                                                power = reserve[indexOfCardsInTable] / 4 + reserve[i + 1] / 4 + current * 100;
+                                                power = all17CardsInPlay[indexOfCardsInTable] / 4 + all17CardsInPlay[i + 1] / 4 + current * 100;
 
                                                 win.Add(new Type()
                                                 {
@@ -2980,11 +2980,11 @@
             if (current >= -1)
             {
                 bool msgbox = false;
-                if (reserve[i]/4 == reserve[i + 1]/4)
+                if (all17CardsInPlay[i]/4 == all17CardsInPlay[i + 1]/4)
                 {
                     if (!msgbox)
                     {
-                        if (reserve[i]/4 == 0)
+                        if (all17CardsInPlay[i]/4 == 0)
                         {
                             current = 1;
                             Power = 13*4 + current*100;
@@ -2994,7 +2994,7 @@
                         else
                         {
                             current = 1;
-                            Power = (reserve[i + 1]/4)*4 + current*100;
+                            Power = (all17CardsInPlay[i + 1]/4)*4 + current*100;
                             win.Add(new Type() {Power = Power, Current = 1});
                             sorted = win.OrderByDescending(op => op.Current).ThenByDescending(op => op.Power).First();
                         }
@@ -3003,42 +3003,42 @@
                 }
                 for (int tc = 16; tc >= 12; tc--)
                 {
-                    if (reserve[i + 1]/4 == reserve[tc]/4)
+                    if (all17CardsInPlay[i + 1]/4 == all17CardsInPlay[tc]/4)
                     {
                         if (!msgbox)
                         {
-                            if (reserve[i + 1]/4 == 0)
+                            if (all17CardsInPlay[i + 1]/4 == 0)
                             {
                                 current = 1;
-                                Power = 13*4 + reserve[i]/4 + current*100;
+                                Power = 13*4 + all17CardsInPlay[i]/4 + current*100;
                                 win.Add(new Type() {Power = Power, Current = 1});
                                 sorted = win.OrderByDescending(op => op.Current).ThenByDescending(op => op.Power).First();
                             }
                             else
                             {
                                 current = 1;
-                                Power = (reserve[i + 1]/4)*4 + reserve[i]/4 + current*100;
+                                Power = (all17CardsInPlay[i + 1]/4)*4 + all17CardsInPlay[i]/4 + current*100;
                                 win.Add(new Type() {Power = Power, Current = 1});
                                 sorted = win.OrderByDescending(op => op.Current).ThenByDescending(op => op.Power).First();
                             }
                         }
                         msgbox = true;
                     }
-                    if (reserve[i]/4 == reserve[tc]/4)
+                    if (all17CardsInPlay[i]/4 == all17CardsInPlay[tc]/4)
                     {
                         if (!msgbox)
                         {
-                            if (reserve[i]/4 == 0)
+                            if (all17CardsInPlay[i]/4 == 0)
                             {
                                 current = 1;
-                                Power = 13*4 + reserve[i + 1]/4 + current*100;
+                                Power = 13*4 + all17CardsInPlay[i + 1]/4 + current*100;
                                 win.Add(new Type() {Power = Power, Current = 1});
                                 sorted = win.OrderByDescending(op => op.Current).ThenByDescending(op => op.Power).First();
                             }
                             else
                             {
                                 current = 1;
-                                Power = (reserve[tc]/4)*4 + reserve[i + 1]/4 + current*100;
+                                Power = (all17CardsInPlay[tc]/4)*4 + all17CardsInPlay[i + 1]/4 + current*100;
                                 win.Add(new Type() {Power = Power, Current = 1});
                                 sorted = win.OrderByDescending(op => op.Current).ThenByDescending(op => op.Power).First();
                             }
@@ -3053,21 +3053,21 @@
         {
             if (current == -1)
             {
-                if (reserve[i]/4 > reserve[i + 1]/4)
+                if (all17CardsInPlay[i]/4 > all17CardsInPlay[i + 1]/4)
                 {
                     current = -1;
-                    Power = reserve[i]/4;
+                    Power = all17CardsInPlay[i]/4;
                     win.Add(new Type() {Power = Power, Current = -1});
                     sorted = win.OrderByDescending(op1 => op1.Current).ThenByDescending(op1 => op1.Power).First();
                 }
                 else
                 {
                     current = -1;
-                    Power = reserve[i + 1]/4;
+                    Power = all17CardsInPlay[i + 1]/4;
                     win.Add(new Type() {Power = Power, Current = -1});
                     sorted = win.OrderByDescending(op1 => op1.Current).ThenByDescending(op1 => op1.Power).First();
                 }
-                if (reserve[i]/4 == 0 || reserve[i + 1]/4 == 0)
+                if (all17CardsInPlay[i]/4 == 0 || all17CardsInPlay[i + 1]/4 == 0)
                 {
                     current = -1;
                     Power = 13;
@@ -3086,9 +3086,9 @@
             for (int j = 0; j <= 16; j++)
             {
                 //await Task.Delay(5);
-                if (holder[j].Visible)
+                if (deckPictureBoxArr[j].Visible)
                 {
-                    holder[j].Image = deck[j];
+                    deckPictureBoxArr[j].Image = deck[j];
                 }       
             }
             if (current == sorted.Current)
@@ -3257,7 +3257,7 @@
                         changed = false;
                         turnCount = 0;
                         raise = 0;
-                        call = 0;
+                        amountToCall = 0;
                         raisedTurn = 123;
                         rounds++;
                         if (!foldedPlayerTurn)
@@ -3296,9 +3296,9 @@
             {
                 for (int j = 12; j <= 14; j++)
                 {
-                    if (holder[j].Image != deck[j])
+                    if (deckPictureBoxArr[j].Image != deck[j])
                     {
-                        holder[j].Image = deck[j];
+                        deckPictureBoxArr[j].Image = deck[j];
                         playerCall = 0;
                         playerRaise = 0;
                         firstBotCall = 0;
@@ -3318,9 +3318,9 @@
             {
                 for (int j = 14; j <= 15; j++)
                 {
-                    if (holder[j].Image != deck[j])
+                    if (deckPictureBoxArr[j].Image != deck[j])
                     {
-                        holder[j].Image = deck[j];
+                        deckPictureBoxArr[j].Image = deck[j];
                         playerCall = 0;
                         playerRaise = 0;
                         firstBotCall = 0;
@@ -3340,9 +3340,9 @@
             {
                 for (int j = 15; j <= 16; j++)
                 {
-                    if (holder[j].Image != deck[j])
+                    if (deckPictureBoxArr[j].Image != deck[j])
                     {
-                        holder[j].Image = deck[j];
+                        deckPictureBoxArr[j].Image = deck[j];
                         playerCall = 0;
                         playerRaise = 0;
                         firstBotCall = 0;
@@ -3444,10 +3444,10 @@
                 fifthBotCall = 0;
                 fifthBotRaise = 0;
                 last = 0;
-                call = bigBlind;
+                amountToCall = bigBlind;
                 raise = 0;
                 imageLocation = Directory.GetFiles("Assets\\Cards", "*.png", SearchOption.TopDirectoryOnly);
-                bools.Clear();
+                playersFoldStatuses.Clear();
                 rounds = 0;
                 playerPower = 0;
                 playerType = -1;
@@ -3470,9 +3470,9 @@
                 sorted.Power = 0;
                 for (int os = 0; os < 17; os++)
                 {
-                    holder[os].Image = null;
-                    holder[os].Invalidate();
-                    holder[os].Visible = false;
+                    deckPictureBoxArr[os].Image = null;
+                    deckPictureBoxArr[os].Invalidate();
+                    deckPictureBoxArr[os].Visible = false;
                 }
                 textboxPot.Text = "0";
                 playerStatus.Text = string.Empty;
@@ -3507,17 +3507,17 @@
                 {
                     if (cRaise != raise && cRaise <= raise)
                     {
-                        call = Convert.ToInt32(raise) - cRaise;
+                        amountToCall = Convert.ToInt32(raise) - cRaise;
                     }
 
-                    if (cCall != call || cCall <= call)
+                    if (cCall != amountToCall || cCall <= amountToCall)
                     {
-                        call = call - cCall;
+                        amountToCall = amountToCall - cCall;
                     }
 
                     if (cRaise == raise && raise > 0)
                     {
-                        call = 0;
+                        amountToCall = 0;
                         buttonCall.Enabled = false;
                         buttonCall.Text = "Callisfuckedup";
                     }
@@ -3603,13 +3603,13 @@
 
             #endregion
 
-            var abc = bools.Count(x => x == false);
+            var abc = playersFoldStatuses.Count(x => x == false);
 
             #region LastManStanding
 
             if (abc == 1)
             {
-                int index = bools.IndexOf(false);
+                int index = playersFoldStatuses.IndexOf(false);
                 if (index == 0)
                 {
                     chips += int.Parse(textboxPot.Text);
@@ -3660,7 +3660,7 @@
 
                 for (int j = 0; j <= 16; j++)
                 {
-                    holder[j].Visible = false;
+                    deckPictureBoxArr[j].Visible = false;
                 }
                 await Finish(1);
             }
@@ -3691,7 +3691,7 @@
             thirdBotPanel.Visible = false;
             fourthBotPanel.Visible = false;
             fifthBotPanel.Visible = false;
-            call = bigBlind;
+            amountToCall = bigBlind;
             raise = 0;
             foldedPlayers = 5;
             type = 0;
@@ -3751,7 +3751,7 @@
             maxLeft = 6;
             last = 123;
             raisedTurn = 1;
-            bools.Clear();
+            playersFoldStatuses.Clear();
             checkWinners.Clear();
             ints.Clear();
             win.Clear();
@@ -3790,9 +3790,9 @@
             imageLocation = Directory.GetFiles("Assets\\Cards", "*.png", SearchOption.TopDirectoryOnly);
             for (int os = 0; os < 17; os++)
             {
-                holder[os].Image = null;
-                holder[os].Invalidate();
-                holder[os].Visible = false;
+                deckPictureBoxArr[os].Image = null;
+                deckPictureBoxArr[os].Invalidate();
+                deckPictureBoxArr[os].Visible = false;
             }
             await Shuffle();
             //await Turns();
@@ -3904,8 +3904,8 @@
             }
             if (sFTurn)
             {
-                holder[c1].Visible = false;
-                holder[c2].Visible = false;
+                deckPictureBoxArr[c1].Visible = false;
+                deckPictureBoxArr[c2].Visible = false;
             }
         }
 
@@ -4071,9 +4071,9 @@
         {
             raising = false;
             sTurn = false;
-            sChips -= call;
-            sStatus.Text = "Call " + call;
-            textboxPot.Text = (int.Parse(textboxPot.Text) + call).ToString();
+            sChips -= amountToCall;
+            sStatus.Text = "Call " + amountToCall;
+            textboxPot.Text = (int.Parse(textboxPot.Text) + amountToCall).ToString();
         }
 
         private void Raised(ref int sChips, ref bool sTurn, Label sStatus)
@@ -4081,7 +4081,7 @@
             sChips -= Convert.ToInt32(raise);
             sStatus.Text = "Raise " + raise;
             textboxPot.Text = (int.Parse(textboxPot.Text) + Convert.ToInt32(raise)).ToString();
-            call = Convert.ToInt32(raise);
+            amountToCall = Convert.ToInt32(raise);
             raising = true;
             sTurn = false;
         }
@@ -4096,15 +4096,15 @@
         {
             Random rand = new Random();
             int rnd = rand.Next(1, 4);
-            if (call <= 0)
+            if (amountToCall <= 0)
             {
                 Check(ref sTurn, sStatus);
             }
-            if (call > 0)
+            if (amountToCall > 0)
             {
                 if (rnd == 1)
                 {
-                    if (call <= RoundN(sChips, n))
+                    if (amountToCall <= RoundN(sChips, n))
                     {
                         Call(ref sChips, ref sTurn, sStatus);
                     }
@@ -4115,7 +4115,7 @@
                 }
                 if (rnd == 2)
                 {
-                    if (call <= RoundN(sChips, n1))
+                    if (amountToCall <= RoundN(sChips, n1))
                     {
                         Call(ref sChips, ref sTurn, sStatus);
                     }
@@ -4129,14 +4129,14 @@
             {
                 if (raise == 0)
                 {
-                    raise = call*2;
+                    raise = amountToCall * 2;
                     Raised(ref sChips, ref sTurn, sStatus);
                 }
                 else
                 {
                     if (raise <= RoundN(sChips, n))
                     {
-                        raise = call*2;
+                        raise = amountToCall * 2;
                         Raised(ref sChips, ref sTurn, sStatus);
                     }
                     else
@@ -4157,13 +4157,13 @@
             int rnd = rand.Next(1, 3);
             if (rounds < 2)
             {
-                if (call <= 0)
+                if (amountToCall <= 0)
                 {
                     Check(ref sTurn, sStatus);
                 }
-                if (call > 0)
+                if (amountToCall > 0)
                 {
-                    if (call >= RoundN(sChips, n1))
+                    if (amountToCall >= RoundN(sChips, n1))
                     {
                         Fold(ref sTurn, ref sFTurn, sStatus);
                     }
@@ -4175,7 +4175,7 @@
 
                     if (!sFTurn)
                     {
-                        if (call >= RoundN(sChips, n) && call <= RoundN(sChips, n1))
+                        if (amountToCall >= RoundN(sChips, n) && amountToCall <= RoundN(sChips, n1))
                         {
                             Call(ref sChips, ref sTurn, sStatus);
                         }
@@ -4194,7 +4194,7 @@
                             }
                             else
                             {
-                                raise = call*2;
+                                raise = amountToCall * 2;
                                 Raised(ref sChips, ref sTurn, sStatus);
                             }
                         }
@@ -4203,9 +4203,9 @@
             }
             if (rounds >= 2)
             {
-                if (call > 0)
+                if (amountToCall > 0)
                 {
-                    if (call >= RoundN(sChips, n1 - rnd))
+                    if (amountToCall >= RoundN(sChips, n1 - rnd))
                     {
                         Fold(ref sTurn, ref sFTurn, sStatus);
                     }
@@ -4217,7 +4217,7 @@
 
                     if (!sFTurn)
                     {
-                        if (call >= RoundN(sChips, n - rnd) && call <= RoundN(sChips, n1 - rnd))
+                        if (amountToCall >= RoundN(sChips, n - rnd) && amountToCall <= RoundN(sChips, n1 - rnd))
                         {
                             Call(ref sChips, ref sTurn, sStatus);
                         }
@@ -4236,13 +4236,13 @@
                             }
                             else
                             {
-                                raise = call*2;
+                                raise = amountToCall * 2;
                                 Raised(ref sChips, ref sTurn, sStatus);
                             }
                         }
                     }
                 }
-                if (call <= 0)
+                if (amountToCall <= 0)
                 {
                     raise = RoundN(sChips, r - rnd);
                     Raised(ref sChips, ref sTurn, sStatus);
@@ -4259,19 +4259,19 @@
         {
             Random rand = new Random();
             int rnd = rand.Next(1, 3);
-            if (call <= 0)
+            if (amountToCall <= 0)
             {
                 Check(ref botTurn, botStatus);
             }
             else
             {
-                if (call >= RoundN(botChips, n))
+                if (amountToCall >= RoundN(botChips, n))
                 {
-                    if (botChips > call)
+                    if (botChips > amountToCall)
                     {
                         Call(ref botChips, ref botTurn, botStatus);
                     }
-                    else if (botChips <= call)
+                    else if (botChips <= amountToCall)
                     {
                         raising = false;
                         botTurn = false;
@@ -4296,7 +4296,7 @@
                     }
                     else
                     {
-                        raise = call*2;
+                        raise = amountToCall * 2;
                         Raised(ref botChips, ref botTurn, botStatus);
                     }
                 }
@@ -4378,9 +4378,9 @@
                 up--;
             }
 
-            if (chips >= call)
+            if (chips >= amountToCall)
             {
-                buttonCall.Text = "Call " + call.ToString();
+                buttonCall.Text = "Call " + amountToCall.ToString();
             }
             else
             {
@@ -4388,12 +4388,12 @@
                 buttonRaise.Enabled = false;
             }
 
-            if (call > 0)
+            if (amountToCall > 0)
             {
                 buttonCheck.Enabled = false;
             }
 
-            if (call <= 0)
+            if (amountToCall <= 0)
             {
                 buttonCheck.Enabled = true;
                 buttonCall.Text = "Call";
@@ -4419,7 +4419,7 @@
                 }
             }
 
-            if (chips < call)
+            if (chips < amountToCall)
             {
                 buttonRaise.Enabled = false;
             }
@@ -4435,7 +4435,7 @@
 
         private async void bCheck_Click(object sender, EventArgs e)
         {
-            if (call <= 0)
+            if (amountToCall <= 0)
             {
                 playerTurn = false;
                 playerStatus.Text = "Check";
@@ -4451,25 +4451,25 @@
         private async void bCall_Click(object sender, EventArgs e)
         {
             Rules(0, 1, "Player", ref playerType, ref playerPower, foldedPlayerTurn);
-            if (chips >= call)
+            if (chips >= amountToCall)
             {
-                chips -= call;
+                chips -= amountToCall;
                 textboxChips.Text = "Chips : " + chips.ToString();
                 if (textboxPot.Text != string.Empty)
                 {
-                    textboxPot.Text = (int.Parse(textboxPot.Text) + call).ToString();
+                    textboxPot.Text = (int.Parse(textboxPot.Text) + amountToCall).ToString();
                 }
 
                 else
                 {
-                    textboxPot.Text = call.ToString();
+                    textboxPot.Text = amountToCall.ToString();
                 }
 
                 playerTurn = false;
-                playerStatus.Text = "Call " + call;
-                playerCall = call;
+                playerStatus.Text = "Call " + amountToCall;
+                playerCall = amountToCall;
             }
-            else if (chips <= call && call > 0)
+            else if (chips <= amountToCall && amountToCall > 0)
             {
                 textboxPot.Text = (int.Parse(textboxPot.Text) + chips).ToString();
                 playerStatus.Text = "All in " + chips;
@@ -4489,7 +4489,7 @@
             int parsedValue;
             if (textboxRaise.Text != string.Empty && int.TryParse(textboxRaise.Text, out parsedValue))
             {
-                if (chips > call)
+                if (chips > amountToCall)
                 {
                     if (raise*2 > int.Parse(textboxRaise.Text))
                     {
@@ -4502,10 +4502,10 @@
                     {
                         if (chips >= int.Parse(textboxRaise.Text))
                         {
-                            call = int.Parse(textboxRaise.Text);
+                            amountToCall = int.Parse(textboxRaise.Text);
                             raise = int.Parse(textboxRaise.Text);
-                            playerStatus.Text = "Raise " + call.ToString();
-                            textboxPot.Text = (int.Parse(textboxPot.Text) + call).ToString();
+                            playerStatus.Text = "Raise " + amountToCall.ToString();
+                            textboxPot.Text = (int.Parse(textboxPot.Text) + amountToCall).ToString();
                             buttonCall.Text = "Call";
                             chips -= int.Parse(textboxRaise.Text);
                             raising = true;
@@ -4515,10 +4515,10 @@
 
                         else
                         {
-                            call = chips;
+                            amountToCall = chips;
                             raise = chips;
                             textboxPot.Text = (int.Parse(textboxPot.Text) + chips).ToString();
-                            playerStatus.Text = "Raise " + call.ToString();
+                            playerStatus.Text = "Raise " + amountToCall.ToString();
                             chips = 0;
                             raising = true;
                             last = 0;

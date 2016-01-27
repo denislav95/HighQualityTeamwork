@@ -18,3 +18,13 @@ C:\Users\DEATH\Desktop\teamwork\Poker\obj\Debug\Poker.Form1.resources
 C:\Users\DEATH\Desktop\teamwork\Poker\obj\Debug\Poker.Properties.Resources.resources
 C:\Users\DEATH\Desktop\teamwork\Poker\obj\Debug\Poker.csproj.GenerateResource.Cache
 C:\Users\DEATH\Desktop\teamwork\Poker\obj\Debug\Poker.pdb
+D:\Hristo\Soft Uni\Materials\КПК\HighQualityTeamwork\trunk\Poker\bin\Debug\Poker.exe.config
+D:\Hristo\Soft Uni\Materials\КПК\HighQualityTeamwork\trunk\Poker\obj\Debug\Poker.exe
+D:\Hristo\Soft Uni\Materials\КПК\HighQualityTeamwork\trunk\Poker\obj\Debug\Poker.csprojResolveAssemblyReference.cache
+D:\Hristo\Soft Uni\Materials\КПК\HighQualityTeamwork\trunk\Poker\obj\Debug\Poker.AddChips.resources
+D:\Hristo\Soft Uni\Materials\КПК\HighQualityTeamwork\trunk\Poker\obj\Debug\Poker.Form1.resources
+D:\Hristo\Soft Uni\Materials\КПК\HighQualityTeamwork\trunk\Poker\obj\Debug\Poker.Properties.Resources.resources
+D:\Hristo\Soft Uni\Materials\КПК\HighQualityTeamwork\trunk\Poker\obj\Debug\Poker.csproj.GenerateResource.Cache
+D:\Hristo\Soft Uni\Materials\КПК\HighQualityTeamwork\trunk\Poker\bin\Debug\Poker.exe
+D:\Hristo\Soft Uni\Materials\КПК\HighQualityTeamwork\trunk\Poker\bin\Debug\Poker.pdb
+D:\Hristo\Soft Uni\Materials\КПК\HighQualityTeamwork\trunk\Poker\obj\Debug\Poker.pdb
