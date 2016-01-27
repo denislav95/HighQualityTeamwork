@@ -21,7 +21,7 @@
             int parsedValue;
             if (int.Parse(this.textBox1.Text) > 100000000)
             {
-                MessageBox.Show("The maximium chips you can add is 100000000");
+                MessageBox.Show("The maximium playerChips you can add is 100000000");
                 return;
             }
             if (!int.TryParse(this.textBox1.Text, out parsedValue))
