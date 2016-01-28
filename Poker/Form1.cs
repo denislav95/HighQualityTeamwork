@@ -122,7 +122,7 @@
         private bool restart;
         private bool raising;
 
-        private Hand sorted;
+        private Hand winningHand;
 
         private string[] cardImagePaths = Directory.GetFiles("Resources\\Cards", "*.png", SearchOption.TopDirectoryOnly);
         //private string[] ImgLocation =
@@ -201,6 +201,95 @@
            this.textboxRaise.Text = (bigBlind*2).ToString();
         }
 
+        private void DisableFormButtons()
+        {
+           this.buttonCall.Enabled = false;
+           this.buttonRaise.Enabled = false;
+           this.buttonFold.Enabled = false;
+           this.buttonCheck.Enabled = false;
+        }
+
+        private void EnableFormButtons()
+        {
+           this.buttonCall.Enabled = true;
+           this.buttonRaise.Enabled = true;
+           this.buttonFold.Enabled = true;
+           this.buttonCheck.Enabled = true;
+        }
+
+        private void FindWinningHand()
+        {
+            this.winningHand = this.winningHands.OrderByDescending(op => op.HandStrength).ThenByDescending(op => op.HandStrengthScore).First();
+        }
+
+        private void AddWinningHandToList(double handStrength, double handStrengthScore)
+        {
+            this.winningHands.Add(new Hand()
+            {
+                HandStrengthScore = handStrengthScore,
+                HandStrength = handStrength
+            });
+        
+        }
+
+        private void ResetCallRaiseAmounts(int j)
+        {
+            if (deckPictureBoxArr[j].Image != deckImageArr[j])
+            {
+                deckPictureBoxArr[j].Image = deckImageArr[j];
+                playerCallAmount = 0;
+                playerRaiseAmount = 0;
+                firstBotCallAmount = 0;
+                firstBotRaiseAmount = 0;
+                secondBotCallAmount = 0;
+                secondBotRaiseAmount = 0;
+                thirdBotCallAmount = 0;
+                thirdBotRaiseAmount = 0;
+                fourthBotCallAmount = 0;
+                fourthBotRaiseAmount = 0;
+                fifthBotCallAmount = 0;
+                fifthBotRaiseAmount = 0;
+            }
+        }
+
+        private void AddChips()
+        {
+            AddChips f2 = new AddChips();
+            f2.ShowDialog();
+            if (f2.a != 0)
+            {
+                playerChips = f2.a;
+                firstBotChips += f2.a;
+                secondBotChips += f2.a;
+                thirdBotChips += f2.a;
+                fourthBotChips += f2.a;
+                fifthBotChips += f2.a;
+                playerFoldedTurn = false;
+                playerTurn = true;
+                this.EnableFormButtons();
+                buttonRaise.Text = "Raise";
+            }
+        }
+
+        //private string ReturnWinningCombination(double handStrength)
+        //{
+        //    //handStrength = handStrength;
+        //    switch (handStrength)
+        //    {
+        //        case 0 :return "";break;
+        //        case (1): return ""; break;
+        //        case (2): return ""; break;
+        //        case (3): return ""; break;
+        //        case (4): return ""; break;
+        //        case (5): return ""; break;
+        //        case (6): return ""; break;
+        //        case (7): return ""; break;
+        //        case (8): return ""; break;
+        //        case (9): return ""; break;
+
+        //    }
+        //}
+
         private async Task Shuffle()
         {
            this.playersInGameStatuses.Add(this.playerFoldedTurn);
@@ -210,10 +299,8 @@
            this.playersInGameStatuses.Add(this.fourthBotFoldedTurn);
            this.playersInGameStatuses.Add(this.fifthBotFoldedTurn);
 
-           this.buttonCall.Enabled = false;
-           this.buttonRaise.Enabled = false;
-           this.buttonFold.Enabled = false;
-           this.buttonCheck.Enabled = false;
+           DisableFormButtons();
+           
 
            this.MaximizeBox = false;
            this.MinimizeBox = false;
@@ -714,11 +801,7 @@
 
             if (i == 17)
             {
-                buttonRaise.Enabled = true;
-                buttonCall.Enabled = true;
-                buttonRaise.Enabled = true;
-                buttonRaise.Enabled = true;
-                buttonFold.Enabled = true;
+                this.EnableFormButtons();
             }
         }
 
@@ -741,11 +824,7 @@
                     up = 10000000;
                     timer.Start();
 
-                    buttonRaise.Enabled = true;
-                    buttonCall.Enabled = true;
-                    buttonRaise.Enabled = true;
-                    buttonRaise.Enabled = true;
-                    buttonFold.Enabled = true;
+                    this.EnableFormButtons();
 
                     turnCount++;
 
@@ -775,11 +854,7 @@
 
                 progressBarTimer.Visible = false;
 
-                buttonRaise.Enabled = false;
-                buttonCall.Enabled = false;
-                buttonRaise.Enabled = false;
-                buttonRaise.Enabled = false;
-                buttonFold.Enabled = false;
+                this.DisableFormButtons();
 
                 timer.Stop();
 
@@ -983,27 +1058,26 @@
             }
         }
 
-        private void Rules(int c1, int c2, string currentBot, ref double handStrength, ref double currentBotPower, bool foldedTurn)
+        private void Rules(int pocketCard1, int pocketCard2, string currentBot, ref double handStrength, ref double currentBotPower, bool foldedTurn)
         {
-            if (!foldedTurn || c1 == 0 && c2 == 1 && playerStatus.Text.Contains("Fold") == false)
+            if (!foldedTurn || pocketCard1 == 0 && pocketCard2 == 1 && playerStatus.Text.Contains("Fold") == false)
             {
                 #region Variables
 
-                var done = false;
+                bool done = false;
 
-                var vf = false;
+                bool vf = false;
 
-                var cardsOnTable = new int[5];
-                var playerCards = new int[7];
+                int[] communityCards = new int[5];
+                int[] playerCards = new int[7];
 
-                playerCards[0] = all17CardsInPlay[c1];
-                playerCards[1] = all17CardsInPlay[c2];
+                playerCards[0] = all17CardsInPlay[pocketCard1];
+                playerCards[1] = all17CardsInPlay[pocketCard2];
 
-                cardsOnTable[0] = playerCards[2] = all17CardsInPlay[12];
-                cardsOnTable[1] = playerCards[3] = all17CardsInPlay[13];
-                cardsOnTable[2] = playerCards[4] = all17CardsInPlay[14];
-                cardsOnTable[3] = playerCards[5] = all17CardsInPlay[15];
-                cardsOnTable[4] = playerCards[6] = all17CardsInPlay[16];
+                for (int i = 0; i < 5; i++)
+                {
+                    communityCards[i] = playerCards[i + 2] = this.all17CardsInPlay[i + 12];
+                }
 
                 var clubs = playerCards.Where(o => o % 4 == 0).ToArray();
                 var diamonds = playerCards.Where(o => o % 4 == 1).ToArray();
@@ -1025,12 +1099,12 @@
 
                 for (i = 0; i < 16; i++)
                 {
-                    if (all17CardsInPlay[i] == int.Parse(deckPictureBoxArr[c1].Tag.ToString()) 
-                        && all17CardsInPlay[i + 1] == int.Parse(deckPictureBoxArr[c2].Tag.ToString()))
+                    if (all17CardsInPlay[i] == int.Parse(deckPictureBoxArr[pocketCard1].Tag.ToString()) 
+                        && all17CardsInPlay[i + 1] == int.Parse(deckPictureBoxArr[pocketCard2].Tag.ToString()))
                     {
                         //Pair from Hand handStrength = 1
 
-                        rPairFromHand(ref handStrength, ref currentBotPower);
+                        rulePairFromHand(ref handStrength, ref currentBotPower);
 
                         #region Pair or Two Pair from Table handStrength = 2 || 0
 
@@ -1058,7 +1132,7 @@
 
                         #region Flush handStrength = 5 || 5.5
 
-                        RuleFlush(ref handStrength, ref currentBotPower, ref vf, cardsOnTable);
+                        RuleFlush(ref handStrength, ref currentBotPower, ref vf, communityCards);
 
                         #endregion
 
@@ -1109,18 +1183,10 @@
                         var max = clubCards.Concat(new[] {int.MinValue}).Max();
 
                         handStrengthScore = max / 4 + handStrength * 100;
+                        
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 8
-                        });
-
-                        sorted = 
-                            winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
 
                     if (clubCards[0] == 0 
@@ -1135,16 +1201,9 @@
 
                         handStrengthScore = max / 4 + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 9
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
                 }
 
@@ -1158,16 +1217,9 @@
 
                         handStrengthScore = max / 4 + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 8
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
 
                     if (diamondCards[0] == 0 
@@ -1182,16 +1234,9 @@
 
                         handStrengthScore = max / 4 + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 9
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
                 }
 
@@ -1205,16 +1250,9 @@
 
                         handStrengthScore = max / 4 + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 8
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
 
                     if (heartCards[0] == 0 
@@ -1229,16 +1267,9 @@
 
                         handStrengthScore = max / 4 + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 9
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
                 }
 
@@ -1252,16 +1283,9 @@
 
                         handStrengthScore = max / 4 + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 8
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
 
                     if (spadeCards[0] == 0 
@@ -1276,16 +1300,9 @@
 
                         handStrengthScore = max / 4 + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 9
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
                 }
             }
@@ -1308,16 +1325,9 @@
 
                         handStrengthScore = (playerCards[j] / 4) * 4 + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 7
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
 
                     if (playerCards[j] / 4 == 0 
@@ -1329,16 +1339,9 @@
 
                         handStrengthScore = 13 * 4 + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 7
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
                 }
             }
@@ -1368,16 +1371,9 @@
 
                                 handStrengthScore = 13 * 2 + handStrength * 100;
 
-                                winningHands.Add(new Hand()
-                                {
-                                    HandStrengthScore = handStrengthScore,
-                                    HandStrength = 6
-                                });
+                                AddWinningHandToList(handStrength, handStrengthScore);
 
-                                sorted = winningHands
-                                    .OrderByDescending(op1 => op1.HandStrength)
-                                    .ThenByDescending(op1 => op1.HandStrengthScore)
-                                    .First();
+                                FindWinningHand();
 
                                 break;
                             }
@@ -1388,16 +1384,9 @@
 
                                 handStrengthScore = fullHouse.Max() / 4 * 2 + handStrength * 100;
 
-                                winningHands.Add(new Hand()
-                                {
-                                    HandStrengthScore = handStrengthScore,
-                                    HandStrength = 6
-                                });
+                                AddWinningHandToList(handStrength, handStrengthScore);
 
-                                sorted = winningHands
-                                    .OrderByDescending(op1 => op1.HandStrength)
-                                    .ThenByDescending(op1 => op1.HandStrengthScore)
-                                    .First();
+                                FindWinningHand();
 
                                 break;
                             }
@@ -1456,16 +1445,9 @@
 
                             handStrengthScore = all17CardsInPlay[i] + handStrength*100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -1476,16 +1458,9 @@
 
                             handStrengthScore = all17CardsInPlay[i + 1] + handStrength*100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -1496,16 +1471,9 @@
 
                             handStrengthScore = flushOfClubs.Max() + handStrength*100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -1523,16 +1491,9 @@
 
                             handStrengthScore = all17CardsInPlay[i] + handStrength*100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -1542,16 +1503,9 @@
 
                             handStrengthScore = flushOfClubs.Max() + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -1566,16 +1520,9 @@
 
                             handStrengthScore = all17CardsInPlay[i + 1] + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -1585,16 +1532,9 @@
 
                             handStrengthScore = flushOfClubs.Max() + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -1610,16 +1550,9 @@
 
                         handStrengthScore = all17CardsInPlay[i] + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
 
                         vf = true;
                     }
@@ -1631,16 +1564,9 @@
 
                         handStrengthScore = all17CardsInPlay[i + 1] + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore, 
-                            HandStrength = 5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
 
                         vf = true;
                     }
@@ -1651,16 +1577,9 @@
 
                         handStrengthScore = flushOfClubs.Max() + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
 
                         vf = true;
                     }
@@ -1677,16 +1596,9 @@
 
                             handStrengthScore = all17CardsInPlay[i] + handStrength*100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -1697,16 +1609,9 @@
 
                             handStrengthScore = all17CardsInPlay[i + 1] + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -1717,16 +1622,9 @@
 
                             handStrengthScore = flushOfDiamonds.Max() + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -1744,16 +1642,9 @@
 
                             handStrengthScore = all17CardsInPlay[i] + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -1763,16 +1654,9 @@
 
                             handStrengthScore = flushOfDiamonds.Max() + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -1787,16 +1671,9 @@
 
                             handStrengthScore = all17CardsInPlay[i + 1] + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -1806,16 +1683,9 @@
 
                             handStrengthScore = flushOfDiamonds.Max() + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -1831,16 +1701,9 @@
 
                         handStrengthScore = all17CardsInPlay[i] + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
 
                         vf = true;
                     }
@@ -1852,16 +1715,9 @@
 
                         handStrengthScore = all17CardsInPlay[i + 1] + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
 
                         vf = true;
                     }
@@ -1872,16 +1728,9 @@
 
                         handStrengthScore = flushOfDiamonds.Max() + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
 
                         vf = true;
                     }
@@ -1898,16 +1747,9 @@
 
                             handStrengthScore = all17CardsInPlay[i] + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -1918,16 +1760,9 @@
 
                             handStrengthScore = all17CardsInPlay[i + 1] + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -1938,16 +1773,9 @@
 
                             handStrengthScore = flushOfHearts.Max() + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -1965,16 +1793,9 @@
 
                             handStrengthScore = all17CardsInPlay[i] + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -1984,17 +1805,9 @@
 
                             handStrengthScore = flushOfHearts.Max() + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = 
-                                winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -2009,16 +1822,9 @@
 
                             handStrengthScore = all17CardsInPlay[i + 1] + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -2028,16 +1834,9 @@
 
                             handStrengthScore = flushOfHearts.Max() + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -2053,16 +1852,9 @@
 
                         handStrengthScore = all17CardsInPlay[i] + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
 
                         vf = true;
                     }
@@ -2074,16 +1866,9 @@
 
                         handStrengthScore = all17CardsInPlay[i + 1] + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
 
                         vf = true;
                     }
@@ -2094,16 +1879,9 @@
 
                         handStrengthScore = flushOfHearts.Max() + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
 
                         vf = true;
                     }
@@ -2120,16 +1898,9 @@
 
                             handStrengthScore = all17CardsInPlay[i] + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -2140,16 +1911,9 @@
 
                             handStrengthScore = all17CardsInPlay[i + 1] + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -2160,16 +1924,9 @@
 
                             handStrengthScore = flushOfSpades.Max() + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -2187,16 +1944,9 @@
 
                             handStrengthScore = all17CardsInPlay[i] + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -2206,16 +1956,9 @@
 
                             handStrengthScore = flushOfSpades.Max() + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -2230,17 +1973,9 @@
 
                             handStrengthScore = all17CardsInPlay[i + 1] + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = 
-                                winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -2250,17 +1985,9 @@
 
                             handStrengthScore = flushOfSpades.Max() + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 5
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = 
-                                winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
 
                             vf = true;
                         }
@@ -2276,17 +2003,9 @@
 
                         handStrengthScore = all17CardsInPlay[i] + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = 
-                            winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
 
                         vf = true;
                     }
@@ -2298,17 +2017,9 @@
 
                         handStrengthScore = all17CardsInPlay[i + 1] + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = 
-                            winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
 
                         vf = true;
                     }
@@ -2319,17 +2030,9 @@
 
                         handStrengthScore = flushOfSpades.Max() + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = 
-                            winningHands.
-                            OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
 
                         vf = true;
                     }
@@ -2345,17 +2048,9 @@
 
                         handStrengthScore = 13 + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5.5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = 
-                            winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
 
                     if (all17CardsInPlay[i + 1] / 4 == 0 
@@ -2367,17 +2062,9 @@
 
                         handStrengthScore = 13 + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5.5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = 
-                            winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
                 }
 
@@ -2392,17 +2079,9 @@
 
                         handStrengthScore = 13 + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5.5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = 
-                            winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
 
                     if (all17CardsInPlay[i + 1] / 4 == 0 
@@ -2414,17 +2093,9 @@
 
                         handStrengthScore = 13 + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5.5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = 
-                            winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
                 }
 
@@ -2439,17 +2110,9 @@
 
                         handStrengthScore = 13 + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5.5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = 
-                            winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
 
                     if (all17CardsInPlay[i + 1] / 4 == 0 
@@ -2461,17 +2124,9 @@
 
                         handStrengthScore = 13 + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5.5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted =
-                            winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
                 }
 
@@ -2486,17 +2141,9 @@
 
                         handStrengthScore = 13 + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5.5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = 
-                            winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
 
                     if (all17CardsInPlay[i + 1] / 4 == 0 
@@ -2507,17 +2154,9 @@
 
                         handStrengthScore = 13 + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 5.5
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = 
-                            winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
                 }
             }
@@ -2538,17 +2177,9 @@
 
                             handStrengthScore = openEnded.Max() + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 4
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = 
-                                winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
                         }
                         else
                         {
@@ -2556,17 +2187,9 @@
 
                             handStrengthScore = openEnded[j + 4] + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 4
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = 
-                                winningHands
-                                .OrderByDescending(op1 => op1.HandStrength)
-                                .ThenByDescending(op1 => op1.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
                         }
                     }
 
@@ -2580,17 +2203,9 @@
 
                         handStrengthScore = 13 + handStrength * 100;
 
-                        winningHands.Add(new Hand()
-                        {
-                            HandStrengthScore = handStrengthScore,
-                            HandStrength = 4
-                        });
+                        AddWinningHandToList(handStrength, handStrengthScore);
 
-                        sorted = 
-                            winningHands
-                            .OrderByDescending(op1 => op1.HandStrength)
-                            .ThenByDescending(op1 => op1.HandStrengthScore)
-                            .First();
+                        FindWinningHand();
                     }
                 }
             }
@@ -2614,17 +2229,9 @@
 
                             handStrengthScore = 13 * 3 + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 3
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = 
-                                winningHands
-                                .OrderByDescending(op => op.HandStrength)
-                                .ThenByDescending(op => op.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
                         }
                         else
                         {
@@ -2633,17 +2240,9 @@
                             handStrengthScore = 
                                 fullHouse[0] / 4 + fullHouse[1] / 4 + fullHouse[2] / 4 + handStrength * 100;
 
-                            winningHands.Add(new Hand()
-                            {
-                                HandStrengthScore = handStrengthScore,
-                                HandStrength = 3
-                            });
+                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                            sorted = 
-                                winningHands
-                                .OrderByDescending(op => op.HandStrength)
-                                .ThenByDescending(op => op.HandStrengthScore)
-                                .First();
+                            FindWinningHand();
                         }
                     }
                 }
@@ -2689,17 +2288,9 @@
 
                                             handStrengthScore = 13 * 4 + (all17CardsInPlay[i + 1] / 4) * 2 + handStrength * 100;
 
-                                            winningHands.Add(new Hand()
-                                            {
-                                                HandStrengthScore = handStrengthScore,
-                                                HandStrength = 2
-                                            });
+                                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                                            sorted = 
-                                                winningHands
-                                                .OrderByDescending(op => op.HandStrength)
-                                                .ThenByDescending(op => op.HandStrengthScore)
-                                                .First();
+                                            FindWinningHand();
                                         }
 
                                         if (all17CardsInPlay[i + 1] / 4 == 0)
@@ -2708,17 +2299,9 @@
 
                                             handStrengthScore = 13 * 4 + (all17CardsInPlay[i] / 4) * 2 + handStrength * 100;
 
-                                            winningHands.Add(new Hand()
-                                            {
-                                                HandStrengthScore = handStrengthScore,
-                                                HandStrength = 2
-                                            });
+                                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                                            sorted = 
-                                                winningHands
-                                                .OrderByDescending(op => op.HandStrength)
-                                                .ThenByDescending(op => op.HandStrengthScore)
-                                                .First();
+                                            FindWinningHand();
                                         }
 
                                         if (all17CardsInPlay[i + 1] / 4 != 0 && all17CardsInPlay[i] / 4 != 0)
@@ -2727,17 +2310,9 @@
 
                                             handStrengthScore = (all17CardsInPlay[i]/4) * 2 + (all17CardsInPlay[i + 1] / 4) * 2 + handStrength * 100;
 
-                                            winningHands.Add(new Hand()
-                                            {
-                                                HandStrengthScore = handStrengthScore,
-                                                HandStrength = 2
-                                            });
+                                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                                            sorted = 
-                                                winningHands
-                                                .OrderByDescending(op => op.HandStrength)
-                                                .ThenByDescending(op => op.HandStrengthScore)
-                                                .First();
+                                            FindWinningHand();
                                         }
                                     }
 
@@ -2787,17 +2362,9 @@
 
                                             handStrengthScore = (all17CardsInPlay[i] / 4) * 2 + 13 * 4 + handStrength * 100;
 
-                                            winningHands.Add(new Hand()
-                                            {
-                                                HandStrengthScore = handStrengthScore,
-                                                HandStrength = 2
-                                            });
+                                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                                            sorted = 
-                                                winningHands
-                                                .OrderByDescending(op => op.HandStrength)
-                                                .ThenByDescending(op => op.HandStrengthScore)
-                                                .First();
+                                            FindWinningHand();
                                         }
 
                                         if (all17CardsInPlay[i] / 4 == 0)
@@ -2806,17 +2373,9 @@
 
                                             handStrengthScore = (all17CardsInPlay[i + 1] / 4) * 2 + 13 * 4 + handStrength * 100;
 
-                                            winningHands.Add(new Hand()
-                                            {
-                                                HandStrengthScore = handStrengthScore,
-                                                HandStrength = 2
-                                            });
+                                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                                            sorted = 
-                                                winningHands
-                                                .OrderByDescending(op => op.HandStrength)
-                                                .ThenByDescending(op => op.HandStrengthScore)
-                                                .First();
+                                            FindWinningHand();
                                         }
 
                                         if (all17CardsInPlay[i + 1] / 4 != 0)
@@ -2826,17 +2385,9 @@
                                             handStrengthScore = 
                                                 (all17CardsInPlay[communityCardsIndex] / 4) * 2 + (all17CardsInPlay[i + 1] / 4) * 2 + handStrength * 100;
 
-                                            winningHands.Add(new Hand()
-                                            {
-                                                HandStrengthScore = handStrengthScore,
-                                                HandStrength = 2
-                                            });
+                                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                                            sorted = 
-                                                winningHands
-                                                .OrderByDescending(op => op.HandStrength)
-                                                .ThenByDescending(op => op.HandStrengthScore)
-                                                .First();
+                                            FindWinningHand();
                                         }
                                         if (all17CardsInPlay[i] / 4 != 0)
                                         {
@@ -2845,17 +2396,9 @@
                                             handStrengthScore = 
                                                 (all17CardsInPlay[communityCardsIndex] / 4) * 2 + (all17CardsInPlay[i] / 4) * 2 + handStrength * 100;
 
-                                            winningHands.Add(new Hand()
-                                            {
-                                                HandStrengthScore = handStrengthScore,
-                                                HandStrength = 2
-                                            });
+                                            AddWinningHandToList(handStrength, handStrengthScore);
 
-                                            sorted = 
-                                                winningHands
-                                                .OrderByDescending(op => op.HandStrength)
-                                                .ThenByDescending(op => op.HandStrengthScore)
-                                                .First();
+                                            FindWinningHand();
                                         }
                                     }
 
@@ -2874,17 +2417,9 @@
 
                                                 handStrengthScore = 13 + all17CardsInPlay[i] / 4 + handStrength * 100;
 
-                                                winningHands.Add(new Hand()
-                                                {
-                                                    HandStrengthScore = handStrengthScore,
-                                                    HandStrength = 1
-                                                });
+                                                AddWinningHandToList(handStrength, handStrengthScore);
 
-                                                sorted = 
-                                                    winningHands
-                                                    .OrderByDescending(op => op.HandStrength)
-                                                    .ThenByDescending(op => op.HandStrengthScore)
-                                                    .First();
+                                                FindWinningHand();
                                             }
                                             else
                                             {
@@ -2892,17 +2427,9 @@
 
                                                 handStrengthScore = all17CardsInPlay[communityCardsIndex] / 4 + all17CardsInPlay[i] / 4 + handStrength * 100;
 
-                                                winningHands.Add(new Hand()
-                                                {
-                                                    HandStrengthScore = handStrengthScore,
-                                                    HandStrength = 1
-                                                });
+                                                AddWinningHandToList(handStrength, handStrengthScore);
 
-                                                sorted = 
-                                                    winningHands
-                                                    .OrderByDescending(op => op.HandStrength)
-                                                    .ThenByDescending(op => op.HandStrengthScore)
-                                                    .First();
+                                                FindWinningHand();
                                             }
                                         }
                                         else
@@ -2913,17 +2440,9 @@
 
                                                 handStrengthScore = 13 + all17CardsInPlay[i + 1] + handStrength * 100;
 
-                                                winningHands.Add(new Hand()
-                                                {
-                                                    HandStrengthScore = handStrengthScore,
-                                                    HandStrength = 1
-                                                });
+                                                AddWinningHandToList(handStrength, handStrengthScore);
 
-                                                sorted = 
-                                                    winningHands
-                                                    .OrderByDescending(op => op.HandStrength)
-                                                    .ThenByDescending(op => op.HandStrengthScore)
-                                                    .First();
+                                                FindWinningHand();
                                             }
                                             else
                                             {
@@ -2931,16 +2450,9 @@
 
                                                 handStrengthScore = all17CardsInPlay[communityCardsIndex] / 4 + all17CardsInPlay[i + 1] / 4 + handStrength * 100;
 
-                                                winningHands.Add(new Hand()
-                                                {
-                                                    HandStrengthScore = handStrengthScore,
-                                                    HandStrength = 1
-                                                });
+                                                AddWinningHandToList(handStrength, handStrengthScore);
 
-                                                sorted = winningHands
-                                                    .OrderByDescending(op => op.HandStrength)
-                                                    .ThenByDescending(op => op.HandStrengthScore)
-                                                    .First();
+                                                FindWinningHand();
                                             }
                                         }
                                     }
@@ -2954,7 +2466,7 @@
             }
         }
 
-        private void rPairFromHand(ref double handStrength, ref double HandStrengthScore)
+        private void rulePairFromHand(ref double handStrength, ref double handStrengthScore)
         {
             if (handStrength >= -1)
             {
@@ -2966,16 +2478,17 @@
                         if (all17CardsInPlay[i]/4 == 0)
                         {
                             handStrength = 1;
-                            HandStrengthScore = 13*4 + handStrength*100;
-                            winningHands.Add(new Hand() {HandStrengthScore = HandStrengthScore, HandStrength = 1});
-                            sorted = winningHands.OrderByDescending(op => op.HandStrength).ThenByDescending(op => op.HandStrengthScore).First();
+                            handStrengthScore = 13*4 + handStrength*100;
+
+                            AddWinningHandToList(handStrength, handStrengthScore);
+                            FindWinningHand();
                         }
                         else
                         {
                             handStrength = 1;
-                            HandStrengthScore = (all17CardsInPlay[i + 1]/4)*4 + handStrength*100;
-                            winningHands.Add(new Hand() {HandStrengthScore = HandStrengthScore, HandStrength = 1});
-                            sorted = winningHands.OrderByDescending(op => op.HandStrength).ThenByDescending(op => op.HandStrengthScore).First();
+                            handStrengthScore = (all17CardsInPlay[i + 1]/4)*4 + handStrength*100;
+                            AddWinningHandToList(handStrength, handStrengthScore);
+                            FindWinningHand();
                         }
                     }
                     msgbox = true;
@@ -2989,16 +2502,16 @@
                             if (all17CardsInPlay[i + 1]/4 == 0)
                             {
                                 handStrength = 1;
-                                HandStrengthScore = 13*4 + all17CardsInPlay[i]/4 + handStrength*100;
-                                winningHands.Add(new Hand() {HandStrengthScore = HandStrengthScore, HandStrength = 1});
-                                sorted = winningHands.OrderByDescending(op => op.HandStrength).ThenByDescending(op => op.HandStrengthScore).First();
+                                handStrengthScore = 13*4 + all17CardsInPlay[i]/4 + handStrength*100;
+                                AddWinningHandToList(handStrength, handStrengthScore);
+                                FindWinningHand();
                             }
                             else
                             {
                                 handStrength = 1;
-                                HandStrengthScore = (all17CardsInPlay[i + 1]/4)*4 + all17CardsInPlay[i]/4 + handStrength*100;
-                                winningHands.Add(new Hand() {HandStrengthScore = HandStrengthScore, HandStrength = 1});
-                                sorted = winningHands.OrderByDescending(op => op.HandStrength).ThenByDescending(op => op.HandStrengthScore).First();
+                                handStrengthScore = (all17CardsInPlay[i + 1]/4)*4 + all17CardsInPlay[i]/4 + handStrength*100;
+                                AddWinningHandToList(handStrength, handStrengthScore);
+                                FindWinningHand();
                             }
                         }
                         msgbox = true;
@@ -3010,16 +2523,16 @@
                             if (all17CardsInPlay[i]/4 == 0)
                             {
                                 handStrength = 1;
-                                HandStrengthScore = 13*4 + all17CardsInPlay[i + 1]/4 + handStrength*100;
-                                winningHands.Add(new Hand() {HandStrengthScore = HandStrengthScore, HandStrength = 1});
-                                sorted = winningHands.OrderByDescending(op => op.HandStrength).ThenByDescending(op => op.HandStrengthScore).First();
+                                handStrengthScore = 13*4 + all17CardsInPlay[i + 1]/4 + handStrength*100;
+                                AddWinningHandToList(handStrength, handStrengthScore);
+                                FindWinningHand();
                             }
                             else
                             {
                                 handStrength = 1;
-                                HandStrengthScore = (all17CardsInPlay[communityCardsIndex]/4)*4 + all17CardsInPlay[i + 1]/4 + handStrength*100;
-                                winningHands.Add(new Hand() {HandStrengthScore = HandStrengthScore, HandStrength = 1});
-                                sorted = winningHands.OrderByDescending(op => op.HandStrength).ThenByDescending(op => op.HandStrengthScore).First();
+                                handStrengthScore = (all17CardsInPlay[communityCardsIndex]/4)*4 + all17CardsInPlay[i + 1]/4 + handStrength*100;
+                                AddWinningHandToList(handStrength, handStrengthScore);
+                                FindWinningHand();
                             }
                         }
                         msgbox = true;
@@ -3028,35 +2541,35 @@
             }
         }
 
-        private void rHighCard(ref double handStrength, ref double HandStrengthScore)
+        private void rHighCard(ref double handStrength, ref double handStrengthScore)
         {
             if (handStrength == -1)
             {
                 if (all17CardsInPlay[i]/4 > all17CardsInPlay[i + 1]/4)
                 {
                     handStrength = -1;
-                    HandStrengthScore = all17CardsInPlay[i]/4;
-                    winningHands.Add(new Hand() {HandStrengthScore = HandStrengthScore, HandStrength = -1});
-                    sorted = winningHands.OrderByDescending(op1 => op1.HandStrength).ThenByDescending(op1 => op1.HandStrengthScore).First();
+                    handStrengthScore = all17CardsInPlay[i]/4;
+                    AddWinningHandToList(handStrength, handStrengthScore);
+                    winningHand = winningHands.OrderByDescending(op1 => op1.HandStrength).ThenByDescending(op1 => op1.HandStrengthScore).First();
                 }
                 else
                 {
                     handStrength = -1;
-                    HandStrengthScore = all17CardsInPlay[i + 1]/4;
-                    winningHands.Add(new Hand() {HandStrengthScore = HandStrengthScore, HandStrength = -1});
-                    sorted = winningHands.OrderByDescending(op1 => op1.HandStrength).ThenByDescending(op1 => op1.HandStrengthScore).First();
+                    handStrengthScore = all17CardsInPlay[i + 1]/4;
+                    AddWinningHandToList(handStrength, handStrengthScore);
+                    winningHand = winningHands.OrderByDescending(op1 => op1.HandStrength).ThenByDescending(op1 => op1.HandStrengthScore).First();
                 }
                 if (all17CardsInPlay[i]/4 == 0 || all17CardsInPlay[i + 1]/4 == 0)
                 {
                     handStrength = -1;
-                    HandStrengthScore = 13;
-                    winningHands.Add(new Hand() {HandStrengthScore = HandStrengthScore, HandStrength = -1});
-                    sorted = winningHands.OrderByDescending(op1 => op1.HandStrength).ThenByDescending(op1 => op1.HandStrengthScore).First();
+                    handStrengthScore = 13;
+                    AddWinningHandToList(handStrength, handStrengthScore);
+                    winningHand = winningHands.OrderByDescending(op1 => op1.HandStrength).ThenByDescending(op1 => op1.HandStrengthScore).First();
                 }
             }
         }
 
-        void AwardWinner(double handStrength, double HandStrengthScore, string currentText, int playerChips, string lastly)
+        void AwardWinner(double handStrength, double handStrengthScore, string currentText, int playerChips, string lastly)
         {
             if (lastly == " ")
             {
@@ -3070,9 +2583,9 @@
                     deckPictureBoxArr[j].Image = deckImageArr[j];
                 }       
             }
-            if (handStrength == sorted.HandStrength)
+            if (handStrength == winningHand.HandStrength)
             {
-                if (HandStrengthScore == sorted.HandStrengthScore)
+                if (handStrengthScore == winningHand.HandStrengthScore)
                 {
                     winnersCount++;
                     winnersStringMsgs.Add(currentText);
@@ -3275,66 +2788,21 @@
             {
                 for (int j = 12; j <= 14; j++)
                 {
-                    if (deckPictureBoxArr[j].Image != deckImageArr[j])
-                    {
-                        deckPictureBoxArr[j].Image = deckImageArr[j];
-                        playerCallAmount = 0;
-                        playerRaiseAmount = 0;
-                        firstBotCallAmount = 0;
-                        firstBotRaiseAmount = 0;
-                        secondBotCallAmount = 0;
-                        secondBotRaiseAmount = 0;
-                        thirdBotCallAmount = 0;
-                        thirdBotRaiseAmount = 0;
-                        fourthBotCallAmount = 0;
-                        fourthBotRaiseAmount = 0;
-                        fifthBotCallAmount = 0;
-                        fifthBotRaiseAmount = 0;
-                    }
+                    this.ResetCallRaiseAmounts(j);
                 }
             }
             if (rounds == turn)
             {
                 for (int j = 14; j <= 15; j++)
                 {
-                    if (deckPictureBoxArr[j].Image != deckImageArr[j])
-                    {
-                        deckPictureBoxArr[j].Image = deckImageArr[j];
-                        playerCallAmount = 0;
-                        playerRaiseAmount = 0;
-                        firstBotCallAmount = 0;
-                        firstBotRaiseAmount = 0;
-                        secondBotCallAmount = 0;
-                        secondBotRaiseAmount = 0;
-                        thirdBotCallAmount = 0;
-                        thirdBotRaiseAmount = 0;
-                        fourthBotCallAmount = 0;
-                        fourthBotRaiseAmount = 0;
-                        fifthBotCallAmount = 0;
-                        fifthBotRaiseAmount = 0;
-                    }
+                    this.ResetCallRaiseAmounts(j);
                 }
             }
             if (rounds == river)
             {
                 for (int j = 15; j <= 16; j++)
                 {
-                    if (deckPictureBoxArr[j].Image != deckImageArr[j])
-                    {
-                        deckPictureBoxArr[j].Image = deckImageArr[j];
-                        playerCallAmount = 0;
-                        playerRaiseAmount = 0;
-                        firstBotCallAmount = 0;
-                        firstBotRaiseAmount = 0;
-                        secondBotCallAmount = 0;
-                        secondBotRaiseAmount = 0;
-                        thirdBotCallAmount = 0;
-                        thirdBotRaiseAmount = 0;
-                        fourthBotCallAmount = 0;
-                        fourthBotRaiseAmount = 0;
-                        fifthBotCallAmount = 0;
-                        fifthBotRaiseAmount = 0;
-                    }
+                    this.ResetCallRaiseAmounts(j);
                 }
             }
             if (rounds == end && playersLeftToAct == 6)
@@ -3386,23 +2854,7 @@
                 fifthBotFoldedTurn = false;
                 if (playerChips <= 0)
                 {
-                    AddChips f2 = new AddChips();
-                    f2.ShowDialog();
-                    if (f2.a != 0)
-                    {
-                        playerChips = f2.a;
-                        firstBotChips += f2.a;
-                        secondBotChips += f2.a;
-                        thirdBotChips += f2.a;
-                        fourthBotChips += f2.a;
-                        fifthBotChips += f2.a;
-                        playerFoldedTurn = false;
-                        playerTurn = true;
-                        buttonRaise.Enabled = true;
-                        buttonFold.Enabled = true;
-                        buttonCheck.Enabled = true;
-                        buttonRaise.Text = "Raise";
-                    }
+                    this.AddChips();
                 }
                 playerPanel.Visible = false;
                 firstBotPanel.Visible = false;
@@ -3445,8 +2897,8 @@
                 winnersStringMsgs.Clear();
                 winnersCount = 0;
                 winningHands.Clear();
-                sorted.HandStrength = 0;
-                sorted.HandStrengthScore = 0;
+                winningHand.HandStrength = 0;
+                winningHand.HandStrengthScore = 0;
                 for (int os = 0; os < 17; os++)
                 {
                     deckPictureBoxArr[os].Image = null;
@@ -3582,11 +3034,11 @@
 
             #endregion
 
-            var abc = playersInGameStatuses.Count(x => x == false);
+            var remainingPlayersInHand = playersInGameStatuses.Count(x => x == false);
 
             #region LastManStanding
 
-            if (abc == 1)
+            if (remainingPlayersInHand == 1)
             {
                 int index = playersInGameStatuses.IndexOf(false);
                 if (index == 0)
@@ -3650,7 +3102,7 @@
 
             #region FiveOrLessLeft
 
-            if (abc < 6 && abc > 1 && rounds >= end)
+            if (remainingPlayersInHand < 6 && remainingPlayersInHand > 1 && rounds >= end)
             {
                 await Finish(2);
             }
@@ -3734,8 +3186,8 @@
             winnersStringMsgs.Clear();
             potContributions.Clear();
             winningHands.Clear();
-            sorted.HandStrength = 0;
-            sorted.HandStrengthScore = 0;
+            winningHand.HandStrength = 0;
+            winningHand.HandStrengthScore = 0;
             textboxPot.Text = "0";
             timeTillNextTurn = 60;
             up = 10000000;
@@ -3748,23 +3200,7 @@
             fifthBotStatus.Text = string.Empty;
             if (playerChips <= 0)
             {
-                AddChips f2 = new AddChips();
-                f2.ShowDialog();
-                if (f2.a != 0)
-                {
-                    playerChips = f2.a;
-                    firstBotChips += f2.a;
-                    secondBotChips += f2.a;
-                    thirdBotChips += f2.a;
-                    fourthBotChips += f2.a;
-                    fifthBotChips += f2.a;
-                    playerFoldedTurn = false;
-                    playerTurn = true;
-                    buttonRaise.Enabled = true;
-                    buttonFold.Enabled = true;
-                    buttonCheck.Enabled = true;
-                    buttonRaise.Text = "Raise";
-                }
+                this.AddChips();
             }
             cardImagePaths = Directory.GetFiles("Resources\\Cards", "*.png", SearchOption.TopDirectoryOnly);
             for (int os = 0; os < 17; os++)
@@ -3780,8 +3216,8 @@
         void FixWinners()
         {
             winningHands.Clear();
-            sorted.HandStrength = 0;
-            sorted.HandStrengthScore = 0;
+            winningHand.HandStrength = 0;
+            winningHand.HandStrengthScore = 0;
             string fixedLast = "qwerty";
             if (!playerStatus.Text.Contains("Fold"))
             {
@@ -3827,7 +3263,7 @@
             AwardWinner(fifthBotType, fifthBotPower, "Bot 5", fifthBotChips, fixedLast);
         }
 
-        void AI(int c1, int c2, ref int sChips, ref bool sTurn, ref bool sFTurn, Label sStatus, int name, double botPower, double botCurrent)
+        void AI(int pocketCard1, int pocketCard2, ref int sChips, ref bool sTurn, ref bool sFTurn, Label sStatus, int name, double botPower, double botCurrent)
         {
             if (!sFTurn)
             {
@@ -3883,8 +3319,8 @@
             }
             if (sFTurn)
             {
-                deckPictureBoxArr[c1].Visible = false;
-                deckPictureBoxArr[c2].Visible = false;
+                deckPictureBoxArr[pocketCard1].Visible = false;
+                deckPictureBoxArr[pocketCard2].Visible = false;
             }
         }
 
@@ -4346,10 +3782,7 @@
             {
                 playerTurn = false;
                 playerFoldedTurn = true;
-                buttonCall.Enabled = false;
-                buttonRaise.Enabled = false;
-                buttonFold.Enabled = false;
-                buttonCheck.Enabled = false;
+                this.DisableFormButtons();
             }
 
             if (up > 0)
